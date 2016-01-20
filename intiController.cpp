@@ -33,28 +33,24 @@ static uint8_t PrevHIDReportBuffer[GENERIC_REPORT_SIZE];
  *  passed to all HID Class driver functions, so that multiple instances of the same class
  *  within a device can be differentiated from one another.
  */
-USB_ClassInfo_HID_Device_t Generic_HID_Interface =
-    {
-        .Config =
-            {
-                .InterfaceNumber              = INTERFACE_ID_GenericHID,
-                .ReportINEndpoint             =
-                    {
-                        .Address              = GENERIC_IN_EPADDR,
-                        .Size                 = GENERIC_EPSIZE,
-                        .Banks                = 1,
-                    },
-                .PrevReportINBuffer           = PrevHIDReportBuffer,
-                .PrevReportINBufferSize       = sizeof(PrevHIDReportBuffer),
-            },
-    };
+USB_ClassInfo_HID_Device_t Generic_HID_Interface;
 
+void setupInterface()
+{
+    Generic_HID_Interface.Config.InterfaceNumber = INTERFACE_ID_GenericHID;
+    Generic_HID_Interface.Config.ReportINEndpoint.Address = GENERIC_IN_EPADDR;
+    Generic_HID_Interface.Config.ReportINEndpoint.Size    = GENERIC_EPSIZE;
+    Generic_HID_Interface.Config.ReportINEndpoint.Banks   = 1;
+    Generic_HID_Interface.Config.PrevReportINBuffer           = PrevHIDReportBuffer;
+    Generic_HID_Interface.Config.PrevReportINBufferSize       = sizeof(PrevHIDReportBuffer);
+}
 
 /** Main program entry point. This routine contains the overall program flow, including initial
  *  setup of all components and the main program loop.
  */
 int main(void)
 {
+    setupInterface();
     SetupHardware();
 
     GlobalInterruptEnable();
