@@ -23,6 +23,8 @@ SRC          = $(TARGET).cpp descriptors.c $(CPP_FILES) $(LUFA_SRC_USB) $(LUFA_S
 LUFA_PATH    = /opt/lufa/LUFA
 CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/ -Iinclude/
 
+#default target
+all:
 # Include LUFA build script makefiles
 include $(LUFA_PATH)/Build/lufa_core.mk
 include $(LUFA_PATH)/Build/lufa_sources.mk
