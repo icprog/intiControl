@@ -19,7 +19,7 @@ F_USB        = $(F_CPU)
 OPTIMIZATION = s
 TARGET       = intiController
 SRC          = $(TARGET).c descriptors.c $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
-LUFA_PATH    = ../../../../LUFA
+LUFA_PATH    = /opt/lufa/LUFA
 CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/
 LD_FLAGS     =
 
@@ -39,4 +39,4 @@ include $(LUFA_PATH)/Build/lufa_atprogram.mk
 
 flash:  $(TARGET).hex
 	dfu-programmer atmega32u2 erase
-	dfu-programmer atmega32u2 flash GenericHID.hex
+	dfu-programmer atmega32u2 flash $(TARGET).hex

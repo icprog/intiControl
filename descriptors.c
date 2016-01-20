@@ -157,9 +157,10 @@ const USB_Descriptor_String_t PROGMEM SerialString = USB_STRING_DESCRIPTOR(L"878
  *  is called so that the descriptor details can be passed back and the appropriate descriptor sent back to the
  *  USB host.
  */
-uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
-                                    const uint16_t wIndex,
-                                    const void** const DescriptorAddress)
+uint16_t CALLBACK_USB_GetDescriptor(
+        const uint16_t wValue,
+        const uint16_t wIndex,
+        const void** const DescriptorAddress)
 {
 	const uint8_t  DescriptorType   = (wValue >> 8);
 	const uint8_t  DescriptorNumber = (wValue & 0xFF);

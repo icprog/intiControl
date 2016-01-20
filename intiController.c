@@ -34,20 +34,20 @@ static uint8_t PrevHIDReportBuffer[GENERIC_REPORT_SIZE];
  *  within a device can be differentiated from one another.
  */
 USB_ClassInfo_HID_Device_t Generic_HID_Interface =
-	{
-		.Config =
-			{
-				.InterfaceNumber              = INTERFACE_ID_GenericHID,
-				.ReportINEndpoint             =
-					{
-						.Address              = GENERIC_IN_EPADDR,
-						.Size                 = GENERIC_EPSIZE,
-						.Banks                = 1,
-					},
-				.PrevReportINBuffer           = PrevHIDReportBuffer,
-				.PrevReportINBufferSize       = sizeof(PrevHIDReportBuffer),
-			},
-	};
+    {
+        .Config =
+            {
+                .InterfaceNumber              = INTERFACE_ID_GenericHID,
+                .ReportINEndpoint             =
+                    {
+                        .Address              = GENERIC_IN_EPADDR,
+                        .Size                 = GENERIC_EPSIZE,
+                        .Banks                = 1,
+                    },
+                .PrevReportINBuffer           = PrevHIDReportBuffer,
+                .PrevReportINBufferSize       = sizeof(PrevHIDReportBuffer),
+            },
+    };
 
 
 /** Main program entry point. This routine contains the overall program flow, including initial
@@ -55,29 +55,29 @@ USB_ClassInfo_HID_Device_t Generic_HID_Interface =
  */
 int main(void)
 {
-	SetupHardware();
+    SetupHardware();
 
-	GlobalInterruptEnable();
+    GlobalInterruptEnable();
 
-	for (;;)
-	{
-		HID_Device_USBTask(&Generic_HID_Interface);
-		USB_USBTask();
-	}
+    for (;;)
+    {
+        HID_Device_USBTask(&Generic_HID_Interface);
+        USB_USBTask();
+    }
 }
 
 /** Configures the board hardware and chip peripherals for the demo's functionality. */
 void SetupHardware(void)
 {
-	/* Disable watchdog if enabled by bootloader/fuses */
-	MCUSR &= ~(1 << WDRF);
-	wdt_disable();
+    /* Disable watchdog if enabled by bootloader/fuses */
+    MCUSR &= ~(1 << WDRF);
+    wdt_disable();
 
-	/* Disable clock division */
-	clock_prescale_set(clock_div_1);
+    /* Disable clock division */
+    clock_prescale_set(clock_div_1);
 
-	/* Hardware Initialization */
-	USB_Init();
+    /* Hardware Initialization */
+    USB_Init();
 }
 
 /** Event handler for the library USB Connection event. */
@@ -93,23 +93,23 @@ void EVENT_USB_Device_Disconnect(void)
 /** Event handler for the library USB Configuration Changed event. */
 void EVENT_USB_Device_ConfigurationChanged(void)
 {
-	bool ConfigSuccess = true;
+    bool ConfigSuccess = true;
 
-	ConfigSuccess &= HID_Device_ConfigureEndpoints(&Generic_HID_Interface);
+    ConfigSuccess &= HID_Device_ConfigureEndpoints(&Generic_HID_Interface);
 
-	USB_Device_EnableSOFEvents();
+    USB_Device_EnableSOFEvents();
 }
 
 /** Event handler for the library USB Control Request reception event. */
 void EVENT_USB_Device_ControlRequest(void)
 {
-	HID_Device_ProcessControlRequest(&Generic_HID_Interface);
+    HID_Device_ProcessControlRequest(&Generic_HID_Interface);
 }
 
 /** Event handler for the USB device Start Of Frame event. */
 void EVENT_USB_Device_StartOfFrame(void)
 {
-	HID_Device_MillisecondElapsed(&Generic_HID_Interface);
+    HID_Device_MillisecondElapsed(&Generic_HID_Interface);
 }
 
 /** HID class driver callback function for the creation of HID reports to the host.
@@ -129,15 +129,15 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
                                          void* ReportData,
                                          uint16_t* const ReportSize)
 {
-	uint8_t* Data        = (uint8_t*)ReportData;
+    uint8_t* Data        = (uint8_t*)ReportData;
 
-	Data[0] = hack[0];
-	Data[1] = hack[1];
-	Data[2] = hack[2];
-	Data[3] = hack[3];
+    Data[0] = hack[0];
+    Data[1] = hack[1];
+    Data[2] = hack[2];
+    Data[3] = hack[3];
 
-	*ReportSize = GENERIC_REPORT_SIZE;
-	return false;
+    *ReportSize = GENERIC_REPORT_SIZE;
+    return false;
 }
 
 /** HID class driver callback function for the processing of HID reports from the host.
@@ -154,10 +154,10 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
                                           const void* ReportData,
                                           const uint16_t ReportSize)
 {
-	uint8_t* Data       = (uint8_t*)ReportData;
-	hack[0] = Data[0];
-	hack[1] = Data[1];
-	hack[2] = Data[2];
-	hack[3] = Data[3];
+    uint8_t* Data       = (uint8_t*)ReportData;
+    hack[0] = Data[0];
+    hack[1] = Data[1];
+    hack[2] = Data[2];
+    hack[3] = Data[3];
 }
 
