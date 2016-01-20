@@ -22,18 +22,6 @@
 
 #include <inttypes.h>
 
-typedef struct
-{
-  uint8_t yOff;
-  uint8_t m;
-  uint8_t d;
-  uint8_t hh;
-  uint8_t mm;
-  uint8_t ss;
-} DateTime;
-
-DateTime DT_get(uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t min, uint8_t sec);
-
 class DateTime
 {
 public:
