@@ -18,13 +18,10 @@ F_CPU        = 8000000
 F_USB        = $(F_CPU)
 OPTIMIZATION = s
 TARGET       = intiController
-SRC          = $(TARGET).cpp descriptors.c $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
+CPP_FILES    = $(wildcard src/*.cpp) 
+SRC          = $(TARGET).cpp descriptors.c $(CPP_FILES) $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
 LUFA_PATH    = /opt/lufa/LUFA
-CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/
-LD_FLAGS     =
-
-# Default target
-all:
+CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/ -Iinclude/
 
 # Include LUFA build script makefiles
 include $(LUFA_PATH)/Build/lufa_core.mk
