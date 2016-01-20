@@ -26,6 +26,15 @@
 
 #include "intiController.h"
 
+#include <global.h>
+#include <i2cmaster.h>
+#include <rtc.h>
+#include <dimmer.h>
+#include <timer.h>
+
+bool usbAttached = false;
+bool usbReceived = false;
+
 /** Buffer to hold the previously generated HID report, for comparison purposes inside the HID class driver. */
 static uint8_t PrevHIDReportBuffer[GENERIC_REPORT_SIZE];
 
@@ -50,6 +59,9 @@ void setupInterface()
  */
 int main(void)
 {
+    Rtc rtc;
+    Timer timer;
+
     setupInterface();
     SetupHardware();
 
@@ -59,6 +71,14 @@ int main(void)
     {
         HID_Device_USBTask(&Generic_HID_Interface);
         USB_USBTask();
+
+        timer.ticked();
+        rtc.tick();
+
+        if (usbAttached)
+        {
+            // send packets to client
+        }
     }
 }
 
@@ -79,11 +99,13 @@ void SetupHardware(void)
 /** Event handler for the library USB Connection event. */
 void EVENT_USB_Device_Connect(void)
 {
+    usbAttached = true;
 }
 
 /** Event handler for the library USB Disconnection event. */
 void EVENT_USB_Device_Disconnect(void)
 {
+    usbAttached = false;
 }
 
 /** Event handler for the library USB Configuration Changed event. */
