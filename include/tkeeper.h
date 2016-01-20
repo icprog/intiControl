@@ -4,16 +4,17 @@
 class TKeeper
 {
 public:
-    struct location
+    class location
     {
-        float latitude;
-        float longitude;
+        public:
+            float latitude;
+            float longitude;
     };
 
     TKeeper(location & loc, int tz);
 
     // configuration
-    bool setLocation(float, float);
+    bool setLocation(location &);
     bool setTimezone(int & );
     bool setDstRules(uint8_t,uint8_t,uint8_t,uint8_t,uint8_t);
 
@@ -38,11 +39,15 @@ private:
 
     char Signum  (int);
     int  Absolute(int);
+    long  Absolute(long);
+    float  Absolute(float);
 
     long DayNumber(uint16_t, uint8_t, uint8_t);
     bool InDst(uint8_t *);
     uint8_t DayOfWeek(uint8_t * when);
     uint8_t LengthOfMonth(uint8_t * when);
+
+    bool IsLeapYear(int yr);
 
     static const float MOON_PERIOD;
     static const int   SECOND = 0;

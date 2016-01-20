@@ -1,4 +1,7 @@
 
+#include <math.h>
+#include <stdlib.h>
+
 #include "tkeeper.h"
 
 const float TKeeper::MOON_PERIOD = 29.530588853f;
@@ -11,7 +14,7 @@ TKeeper::TKeeper(TKeeper::location & loc, int tz)
 
 bool TKeeper::setTimezone(int & tz)
 {
-    bool ret = (Absolute(z) < 720);
+    bool ret = (abs(tz) < 720);
 
     if (ret)
         m_tz = tz;
@@ -21,7 +24,7 @@ bool TKeeper::setTimezone(int & tz)
 
 bool TKeeper::setLocation(location & loc)
 {
-    bool ret = (fabs(loc.longitude) < 180.0) && (fabs(loc.latitude) < 90.0);
+    bool ret = (Absolute(loc.longitude) < 180.0) && (Absolute(loc.latitude) < 90.0);
 
     if (ret)
         m_location = loc;
@@ -229,7 +232,21 @@ char TKeeper::Signum(int n)
 
     return 1;
 }
+long TKeeper::Absolute(long n)
+{
+    if (n < 0)
+        return 0 - n;
 
+    return n;
+}
+
+float TKeeper::Absolute(float n)
+{
+    if (n < 0)
+        return 0 - n;
+
+    return n;
+}
 int TKeeper::Absolute(int n)
 {
     if (n < 0)
@@ -318,7 +335,7 @@ bool TKeeper::ComputeSun(uint8_t * when, bool rs)
     float ha = (cos(1.585340737228125) / (cos(lat) * cos(decl)) - tan(lat) * tan(decl));
 
     // we're in the (ant)arctic and there is no rise(or set) today!
-    if (fabs(ha) > 1.0)
+    if (Absolute(ha) > 1.0)
         return false;
 
     ha = acos(ha);
