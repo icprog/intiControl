@@ -22,17 +22,64 @@
 #include <led.h>
 #include <settings.h>
 
-Led::Led()
-    : m_white(WHITE),
-     m_rblue (ROYAL_BLUE),
-     m_blue  (BLUE),
-     m_red   (RED),
-     m_green (GREEN),
-     m_violet(VIOLET),
-     m_yellow(YELLOW)
+Led::Led(const Settings::Emitters &settings)
+  : m_white (WHITE),
+    m_rblue (ROYAL_BLUE),
+    m_blue  (BLUE),
+    m_red   (RED),
+    m_green (GREEN),
+    m_violet(VIOLET),
+    m_yellow(YELLOW)
 {
-    float something = sin(0);
+    m_config[WHITE]     .dimmer = &m_white;
+    m_config[WHITE]     .max    = settings.maxWhite;
 
-    something += 0.1f;
+    m_config[ROYAL_BLUE].dimmer = &m_rblue;
+    m_config[ROYAL_BLUE].max    = settings.maxRoyalBlue;
+
+    m_config[BLUE]      .dimmer = &m_blue;
+    m_config[BLUE]      .max    = settings.maxBlue;
+
+    m_config[RED]       .dimmer = &m_red;
+    m_config[RED]       .max    = settings.maxRed;
+
+    m_config[GREEN]     .dimmer = &m_green;
+    m_config[GREEN]     .max    = settings.maxGreen;
+
+    m_config[VIOLET]    .dimmer = &m_violet;
+    m_config[VIOLET]    .max    = settings.maxViolet;
+
+    m_config[YELLOW]    .dimmer = &m_yellow;
+    m_config[YELLOW]    .max    = settings.maxYellow;
 }
 
+bool Led::setConfig(uint8_t ch, float step, uint16_t min, uint16_t max)
+{
+    bool ret = false;
+
+    if (ch < TOTALCH)
+    {
+        m_config[ch].step = step;
+        m_config[ch].min  = min;
+        m_config[ch].max  = max;
+    }
+
+    return ret;
+}
+
+void Led::tick()
+{
+    // expect to be called at 1Hz
+    Config * config = m_config;
+    for (uint8_t i = 0; i < TOTALCH; i++, config++)
+    {
+        config->value += config->step;
+
+        if (config->value > config->max)
+            config->value = config->max;
+        if (config->value < config->min)
+            config->value = config->min;
+
+        config->dimmer->setLevel((uint16_t)config->value);
+    }
+}

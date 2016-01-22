@@ -22,16 +22,32 @@
 
 #include <inttypes.h>
 #include <dimmer.h>
+#include <settings.h>
 
 class Led
 {
 public:
-    Led();
+    Led(const Settings::Emitters & settings);
 
-    void newConfiguration();
+    bool setConfig(uint8_t ch, float step, uint16_t min, uint16_t max);
 
+    void tick();
 
 private:
+    class Config
+    {
+    public:
+        Config()
+            : step(1), min(0), max(4096), dimmer(0)
+        {}
+
+        float    step;    // how much to step every time tick is called
+        float    value;   // running value
+        uint16_t min;
+        uint16_t max;
+        Dimmer * dimmer;
+    };
+
     static const uint8_t WHITE      = 0;
     static const uint8_t ROYAL_BLUE = 1;
     static const uint8_t BLUE       = 2;
@@ -39,7 +55,7 @@ private:
     static const uint8_t GREEN      = 4;
     static const uint8_t VIOLET     = 5;
     static const uint8_t YELLOW     = 6;
-    static const uint8_t TOTAL      = 7;
+    static const uint8_t TOTALCH    = 7;
 
     // need to be seperate (no container)
     // due to avr-gcc limitation(s)
@@ -53,4 +69,6 @@ private:
     Dimmer m_violet;
     Dimmer m_yellow;
 
+    // max PWM allowable for all channels
+    Config m_config[TOTALCH];
 };
