@@ -12,6 +12,8 @@ include/rtc.h
 include/settings.h
 include/timer.h
 include/tkeeper.h
+include/control.h
+include/usb.h
 src/datetime.c
 src/dimmer.cpp
 src/eeprom.cpp
@@ -21,6 +23,8 @@ src/rtc.cpp
 src/settings.cpp
 src/timer.cpp
 src/tkeeper.cpp
+src/control.cpp
+src/usb.cpp
 descriptors.c
 descriptors.h
 intiController.cpp
