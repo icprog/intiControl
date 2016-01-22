@@ -30,3 +30,14 @@
 
 # Debug files
 *.dSYM/
+
+*.user
+*.d
+*.hex
+
+*.bin
+*.eep
+*.lss
+*.map
+*.sym
+
