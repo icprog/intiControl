@@ -37,9 +37,9 @@ private:
     void Adjust    (uint8_t *, long);
     bool ComputeSun(uint8_t *, bool);
 
-    char Signum  (int);
-    int  Absolute(int);
-    long  Absolute(long);
+    char   Signum  (int);
+    int    Absolute(int);
+    long   Absolute(long);
     float  Absolute(float);
 
     long DayNumber(uint16_t, uint8_t, uint8_t);

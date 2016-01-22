@@ -57,7 +57,8 @@ bool Rtc::tick()
 {
     bool ret = ticked;
     ticked = false;
-     return ret;
+
+    return ret;
 }
 
 void Rtc::adjust(const DateTime& dt)

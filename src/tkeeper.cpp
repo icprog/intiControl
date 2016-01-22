@@ -60,12 +60,12 @@ void TKeeper::DST(uint8_t *now)
         Adjust(now, dstadv);
 }
 
-bool TKeeper::SunRise(uint8_t * when)
+bool TKeeper::SunRise(uint8_t *when)
 {
     return ComputeSun(when, true);
 }
 
-bool TKeeper::SunSet(uint8_t * when)
+bool TKeeper::SunSet(uint8_t *when)
 {
     return ComputeSun(when, false);
 }
@@ -260,56 +260,58 @@ void TKeeper::Adjust(uint8_t * when, long offset)
     long tmp, mod, nxt;
 
     // offset is in minutes
-    tmp=when[MINUTE]+offset; // minutes
-    nxt=tmp/60;// hours
-    mod=Absolute(tmp) % 60;
-    mod=mod*Signum(tmp)+60;
+    tmp = when[MINUTE] + offset; // minutes
+    nxt = tmp / 60;// hours
+    mod = Absolute(tmp) % 60;
+    mod = mod*Signum(tmp) + 60;
     mod %= 60;
-    when[MINUTE]=mod;
+    when[MINUTE] = mod;
 
-    tmp=nxt+when[HOUR];
-    nxt=tmp/24;// days
-    mod=Absolute(tmp) % 24;
-    mod=mod*Signum(tmp)+24;
+    tmp = nxt + when[HOUR];
+    nxt = tmp / 24;// days
+    mod = Absolute(tmp) % 24;
+    mod = mod*Signum(tmp) + 24;
     mod %= 24;
     when[HOUR]=mod;
 
-    tmp=nxt+when[DAY];
-    mod=LengthOfMonth(when);
+    tmp = nxt + when[DAY];
+    mod = LengthOfMonth(when);
 
-    if(tmp>mod){
-        tmp-=mod;
-        when[DAY]=tmp+1;
+    if (tmp > mod)
+    {
+        tmp -= mod;
+        when[DAY] = tmp + 1;
         when[MONTH]++;
     }
-    if(tmp<1){
+    if (tmp < 1)
+    {
         when[MONTH]--;
-        mod=LengthOfMonth(when);
-        when[DAY]=tmp+mod;
+        mod = LengthOfMonth(when);
+        when[DAY] = tmp + mod;
     }
 
     tmp=when[YEAR];
-    if(when[MONTH]==0){
-        when[MONTH]=12;
+    if(when[MONTH] == 0)
+    {
+        when[MONTH] = 12;
         tmp--;
     }
-    if(when[MONTH]>12){
-        when[MONTH]=1;
+
+    if(when[MONTH] > 12)
+    {
+        when[MONTH] = 1;
         tmp++;
     }
-    tmp+=100;
-    tmp %= 100;
-    when[YEAR]=tmp;
 
+    tmp += 100;
+    tmp %= 100;
+    when[YEAR] = tmp;
 }
 
-bool TKeeper::ComputeSun(uint8_t * when, bool rs)
+bool TKeeper::ComputeSun(uint8_t *when, bool rs)
 {
-    float z;
-    int doy;
-
     uint8_t month = when[MONTH] - 1;
-    uint8_t day   = when[DAY] - 1;
+    uint8_t day   = when[DAY]   - 1;
 
     float lon = -m_location.longitude / 57.295779513082322;
     float lat =  m_location.latitude  / 57.295779513082322;

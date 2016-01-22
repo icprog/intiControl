@@ -22,6 +22,9 @@
 
 #include <inttypes.h>
 
+/**
+ * @brief The DateTime class
+ */
 class DateTime
 {
 public:
@@ -38,6 +41,7 @@ public:
     const uint8_t  minute   () const { return mm;  }
     const uint8_t  second   () const { return ss;  }
     const uint8_t  dayOfWeek() const;
+
     // 32-bit times as seconds since 1/1/2000
     long get() const;
 
