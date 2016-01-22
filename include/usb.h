@@ -15,13 +15,35 @@
  * along with intiLED.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * intiLED is a hardware and softwasre platform used to control high
- * power LED strings.
- *
- *
- * USB stack derived from LUFA Generic HID Client side demo project.
- * https://github.com/abcminiuser/lufa
- *
  */
+
 #pragma once
 
+#include <avr/io.h>
+#include <avr/wdt.h>
+#include <avr/power.h>
+#include <avr/interrupt.h>
+#include <string.h>
+
+#include "descriptors.h"
+#include "Config/AppConfig.h"
+
+#include <LUFA/Drivers/USB/USB.h>
+#include <LUFA/Platform/Platform.h>
+
+
+
+class Usb
+{
+public:
+    Usb();
+
+    bool tick();
+    bool attached();
+
+private:
+    uint8_t m_buffer[GENERIC_REPORT_SIZE];
+    USB_ClassInfo_HID_Device_t m_interface;
+
+    bool m_attached;
+};
