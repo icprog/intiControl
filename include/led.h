@@ -69,6 +69,6 @@ private:
     Dimmer m_violet;
     Dimmer m_yellow;
 
-    // max PWM allowable for all channels
+    // configuration accross all channels
     Config m_config[TOTALCH];
 };

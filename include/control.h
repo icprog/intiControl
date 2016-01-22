@@ -19,13 +19,25 @@
 
 #pragma once
 
+#include <datetime.h>
+#include <settings.h>
+#include <led.h>
+
 class Control
 {
 public:
-    Control();
+    Control(const Settings::Emitters &led, const DateTime &now);
 
-    void tick();
+    void tick(const DateTime & time);
 
 private:
-    
+    void calcTimes();
+
+    bool hitSunrise(const DateTime & time);
+    bool hitSunset (const DateTime & time);
+
+    DateTime m_sunrise;
+    DateTime m_sunset;
+
+    Led m_led;
 };

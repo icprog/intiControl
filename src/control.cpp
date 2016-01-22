@@ -18,9 +18,33 @@
  */
 
 #include <control.h>
+#include <tkeeper.h>
 
-Control::Control()
+Control::Control(const Settings::Emitters & led, const DateTime & now)
+    : m_sunrise(now), m_sunset(now), m_led(led)
 {}
 
-void Control::tick()
-{}
+void Control::tick(const DateTime &time)
+{
+    m_led.tick();
+}
+void Control::calcTimes()
+{
+    // call this once at midnight
+
+    // work out when sunrise and sunset are
+    // work out mid point
+    // let each led unit
+}
+bool Control::hitSunrise(const DateTime & time)
+{
+    bool ret = ((long)time.get() >= (long)m_sunrise.get());
+
+    return ret;
+}
+bool Control::hitSunset(const DateTime & time)
+{
+    bool ret = ((long)time.get() >= (long)m_sunset.get());
+
+    return ret;
+}

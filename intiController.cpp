@@ -29,8 +29,8 @@
 #include <global.h>
 #include <usb.h>
 #include <rtc.h>
-#include <led.h>
 #include <settings.h>
+#include <control.h>
 
 /** Configures the board hardware and chip peripherals for the demo's functionality. */
 void SetupHardware(void)
@@ -52,11 +52,9 @@ void SetupHardware(void)
 int main(void)
 {
     Usb      usb;
-    Settings settings;
     Rtc      rtc;
-    Led      led(settings.getEmitters());
-
-    //SetupHardware();
+    Settings settings;
+    Control  control(settings.getEmitters(), rtc.now());
 
     GlobalInterruptEnable();
 
@@ -66,7 +64,7 @@ int main(void)
         // one second tick
         if (rtc.tick())
         {
-            led.tick();
+            control.tick(rtc.now());
             if (usb.attached())
             {
                 // send packets to client
