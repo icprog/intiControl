@@ -9,6 +9,7 @@ This firmware runs on custom hardware based on an Atmel ATMEGA32u2 controller. T
 This allows dimming control using 16bit resolution.
 
 The lights can be set to any 3 modes;
+
 1. Manual
 2. Semi-Automatic
 3. Full-Automatic
