@@ -31,6 +31,7 @@ public:
     bool attached();
 
 private:
+    static const uint8_t GENERIC_REPORT_SIZE = 25;
     uint8_t m_buffer[GENERIC_REPORT_SIZE];
     USB_ClassInfo_HID_Device_t m_interface;
 
