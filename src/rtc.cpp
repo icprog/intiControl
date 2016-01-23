@@ -79,12 +79,12 @@ void Rtc::adjust(const DateTime& dt)
 }
 DateTime Rtc::now()
 {
-    uint8_t ss = 0;
-    uint8_t mm = 0;
-    uint8_t hh = 0;
-    uint8_t d  = 0;
-    uint8_t m  = 0;
-    uint16_t y = 0;
+    uint8_t  ss = 0;
+    uint8_t  mm = 0;
+    uint8_t  hh = 0;
+    uint8_t  d  = 0;
+    uint8_t  m  = 0;
+    uint16_t y  = 0;
 
     if (i2c_init())
     {
@@ -105,7 +105,7 @@ DateTime Rtc::now()
         }
     }
 
-    return DateTime (y, m, d, hh, mm, ss);
+    return DateTime(y, m, d, hh, mm, ss);
 }
 
 void Rtc::setIRQ(uint8_t state)

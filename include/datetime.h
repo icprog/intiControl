@@ -30,8 +30,17 @@ class DateTime
 {
 public:
     DateTime (long t = 0);
-    DateTime (uint16_t year, uint8_t month, uint8_t day,
-            uint8_t hour = 0, uint8_t min = 0, uint8_t sec = 0);
+
+    DateTime (uint16_t year,
+              uint8_t  month,
+              uint8_t  day,
+              uint8_t  hour = 0,
+              uint8_t  min  = 0,
+              uint8_t  sec  = 0);
+
+    // A convenient constructor for using "the compiler's time":
+    //   DateTime now (__DATE__, __TIME__);
+    // NOTE: using PSTR would further reduce the RAM footprint
     DateTime (const char* date, const char* time);
 
     const uint16_t year     () const { return 2000 + yOff;  }

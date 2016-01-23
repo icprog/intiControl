@@ -157,8 +157,8 @@ void i2c_wait_scl_high(void)
 
       "_Lwait_return:"
       : : [SCLIN] "I" (SCL_IN), [SCLPIN] "I" (SCL_PIN),
-	[HISTRETCH] "M" (I2C_MAX_STRETCH>>8),
-	[LOSTRETCH] "M" (I2C_MAX_STRETCH&0xFF)
+    [HISTRETCH] "M" (I2C_MAX_STRETCH>>8),
+    [LOSTRETCH] "M" (I2C_MAX_STRETCH&0xFF)
       : "r26", "r27");
 #endif
 }
