@@ -27,6 +27,9 @@ Control::Control(const Settings::Emitters & led, const DateTime & now)
 void Control::tick(const DateTime &time)
 {
     m_led.tick();
+
+    if (!time.hour() && !time.minute())
+        calcTimes();
 }
 void Control::calcTimes()
 {
