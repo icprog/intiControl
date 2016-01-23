@@ -14,7 +14,8 @@
  * You should have received a copy of the GNU General Public License
  * along with intiLED.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Original file built from https://github.com/jcw/rtclib
+ * DateTime class derived from Arduino RTC library.
+ * https://github.com/jcw/rtclib
  *
  */
 

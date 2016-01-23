@@ -14,11 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with intiLED.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Original file built from https://github.com/jcw/rtclib
+ * DateTime class derived from Arduino RTC library.
+ * https://github.com/jcw/rtclib
  *
  */
 
-#include <avr/io.h>
 #include <avr/pgmspace.h>
 #include <datetime.h>
 
@@ -85,14 +85,17 @@ DateTime::DateTime (long t)
     d = days + 1;
 }
 
-DateTime::DateTime (uint16_t year, uint8_t month, uint8_t day, uint8_t hour, uint8_t min, uint8_t sec)
-    : yOff((year >= 2000) ? (year - 2000) : year), m(month), d(day), hh(hour), mm(min), ss(sec)
+DateTime::DateTime (uint16_t year,
+                    uint8_t  month,
+                    uint8_t  day,
+                    uint8_t  hour,
+                    uint8_t  min,
+                    uint8_t  sec)
+    : yOff((year >= 2000) ? (year - 2000) : year),
+      m(month), d(day), hh(hour), mm(min), ss(sec)
 {
 }
 
-// A convenient constructor for using "the compiler's time":
-//   DateTime now (__DATE__, __TIME__);
-// NOTE: using PSTR would further reduce the RAM footprint
 DateTime::DateTime (const char* date, const char* time)
     : yOff(conv2d(date + 9)), m(0), d(conv2d(date + 4)), hh(conv2d(time)), mm(conv2d(time + 3)), ss(conv2d(time + 6))
 {

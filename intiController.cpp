@@ -15,12 +15,13 @@
  * along with intiLED.  If not, see <http://www.gnu.org/licenses/>.
  *
  *
- * intiLED is a hardware and softwasre platform used to control high
+ * intiLED is a hardware and software platform used to control high
  * power LED strings.
  *
  *
  * USB stack derived from LUFA Generic HID Client side demo project.
  * https://github.com/abcminiuser/lufa
+ *
  *
  */
 

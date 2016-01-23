@@ -14,7 +14,7 @@ include/timer.h
 include/tkeeper.h
 include/control.h
 include/usb.h
-src/datetime.c
+src/datetime.cpp
 src/dimmer.cpp
 src/eeprom.cpp
 src/i2cmaster.cpp
@@ -28,4 +28,3 @@ src/usb.cpp
 descriptors.c
 descriptors.h
 intiController.cpp
-intiController.h

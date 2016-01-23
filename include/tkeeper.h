@@ -14,6 +14,13 @@
  * You should have received a copy of the GNU General Public License
  * along with intiLED.  If not, see <http://www.gnu.org/licenses/>.
  *
+ * TKeeper class derived from TimeLord library.
+ * http://swfltek.com/arduino/sunrise.html
+ *
+ * The above library is deprecated and functionality is listed as being
+ * incorporated into avr-libc 1.8.1
+ *
+ * Should look at using standard library functions instead
  *
  */
 

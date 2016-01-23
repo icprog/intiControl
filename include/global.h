@@ -16,11 +16,6 @@
  *
  */
 
-/*
- * Global HW definitions for intiLED controller
- *
- */
-
 #pragma once
 
 #define SDA_PIN  5
