@@ -27,6 +27,9 @@
 
 #include "intiController.h"
 
+#include <avr/wdt.h>
+#include <avr/power.h>
+
 #include <global.h>
 #include <usb.h>
 #include <rtc.h>

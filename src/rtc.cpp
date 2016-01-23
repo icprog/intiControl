@@ -25,12 +25,10 @@
 // 2012-11-08 RAM methods - idreammicro.com
 // 2012-11-14 SQW/OUT methods - idreammicro.com
 
-#include <avr/io.h>
-#include <util/delay.h>
 #include <avr/interrupt.h>
-#include <global.h>
 #include <i2cmaster.h>
-#include "rtc.h"
+
+#include <rtc.h>
 
 volatile bool ticked = false;
 
