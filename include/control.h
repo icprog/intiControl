@@ -31,13 +31,14 @@ public:
     void tick(const DateTime & time);
 
 private:
-    void calcTimes();
+    void calcTimes(const DateTime &time);
 
     bool hitSunrise(const DateTime & time);
     bool hitSunset (const DateTime & time);
 
-    DateTime m_sunrise;
-    DateTime m_sunset;
+    DateTime m_sunrise;    // time of sunrise
+    DateTime m_sunset;     // time of sunset
+    int16_t  m_seconds;    // number of seconds to peak (midday)
 
     Led m_led;
 };

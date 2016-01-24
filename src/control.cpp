@@ -26,18 +26,40 @@ Control::Control(const Settings::Emitters & led, const DateTime & now)
 
 void Control::tick(const DateTime &time)
 {
-    m_led.tick();
-
     if (!time.hour() && !time.minute())
-        calcTimes();
-}
-void Control::calcTimes()
-{
-    // call this once at midnight
+        calcTimes(time);
 
-    // work out when sunrise and sunset are
-    // work out mid point
-    // let each led unit
+    if (hitSunrise(time))
+    {
+        m_led.tick();
+
+        if (!m_seconds--)
+            m_led.inverse();
+    }
+}
+void Control::calcTimes(const DateTime &time)
+{
+    TKeeper::location loc;
+    TKeeper tkeep(loc);
+
+    m_sunrise = time;
+    m_sunset  = time;
+
+    tkeep.SunRise(m_sunrise);
+    tkeep.SunSet (m_sunset);
+
+    m_seconds = m_sunset - m_sunrise;
+    m_seconds /= 2;
+
+    for (int i = 0; i < Led::getMaxCh(); i++)
+    {
+        Led::Config config = m_led.getConfig(i);
+
+        // work out what the required step size is
+        config.step = (config.max - config.min) / m_seconds;
+
+        m_led.setConfig(i, config);
+    }
 }
 bool Control::hitSunrise(const DateTime & time)
 {
