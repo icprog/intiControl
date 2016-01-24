@@ -26,13 +26,6 @@
 class Led
 {
 public:
-    Led(const Settings::Emitters & settings);
-
-    bool setConfig(uint8_t ch, float step, uint16_t min, uint16_t max);
-
-    void tick();
-
-private:
     class Config
     {
     public:
@@ -47,14 +40,33 @@ private:
         Dimmer * dimmer;
     };
 
-    static const uint8_t WHITE      = 0;
-    static const uint8_t ROYAL_BLUE = 1;
-    static const uint8_t BLUE       = 2;
-    static const uint8_t RED        = 3;
-    static const uint8_t GREEN      = 4;
-    static const uint8_t VIOLET     = 5;
-    static const uint8_t YELLOW     = 6;
-    static const uint8_t TOTALCH    = 7;
+    Led(const Settings::Emitters & settings);
+
+    bool   setConfig(uint8_t ch, float step, uint16_t min, uint16_t max);
+    bool   setConfig(uint8_t ch, const Config & config);
+    const Config &getConfig(uint8_t ch);
+
+    void inverse();
+
+    void tick();
+
+    static uint8_t getMaxCh()
+    {
+        return TOTALCH;
+    }
+
+private:
+    enum Channel
+    {
+        WHITE      = 0,
+        ROYAL_BLUE = 1,
+        BLUE       = 2,
+        RED        = 3,
+        GREEN      = 4,
+        VIOLET     = 5,
+        YELLOW     = 6,
+        TOTALCH    = 7
+    };
 
     // need to be seperate (no container)
     // due to avr-gcc limitation(s)
@@ -71,3 +83,4 @@ private:
     // configuration accross all channels
     Config m_config[TOTALCH];
 };
+

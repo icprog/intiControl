@@ -66,6 +66,31 @@ bool Led::setConfig(uint8_t ch, float step, uint16_t min, uint16_t max)
     return ret;
 }
 
+bool Led::setConfig(uint8_t ch, const Config & config)
+{
+    bool ret = false;
+
+    if (ch < TOTALCH)
+        m_config[ch] = config;
+
+    return ret;
+}
+void Led::inverse()
+{
+    // expect to be called at max levels
+    // this ensures we roll off for night time
+    Config * config = m_config;
+    for (uint8_t i = 0; i < TOTALCH; i++, config++)
+    {
+        config->step = -config->step;
+    }
+}
+const Led::Config & Led::getConfig(uint8_t ch)
+{
+    if (ch < TOTALCH)
+        return m_config[ch];
+}
+
 void Led::tick()
 {
     // expect to be called at 1Hz
