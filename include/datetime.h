@@ -55,6 +55,20 @@ public:
     // 32-bit times as seconds since 1/1/2000
     long get() const;
 
+    operator long()
+    {
+        return get();
+    }
+
+    void resetTime(uint8_t hh = 0, uint8_t mm = 0, uint8_t ss = 0);
+    void adjust(int minutes);
+
+    uint8_t DayOfWeek();
+    uint8_t LengthOfMonth();
+
+    bool IsLeapYear(int year);
+    bool InDst(const DateTime & p);
+
 private:
     uint8_t yOff, m, d, hh, mm, ss;
 

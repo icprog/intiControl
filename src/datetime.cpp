@@ -20,6 +20,9 @@
  */
 
 #include <avr/pgmspace.h>
+#include <math.h>
+#include <stdlib.h>
+#include <local_maths.h>
 #include <datetime.h>
 
 static const uint8_t daysInMonth [] PROGMEM = {
@@ -124,3 +127,106 @@ long DateTime::get() const
     uint16_t days = date2days(yOff, m, d);
     return time2long(days, hh, mm, ss);
 }
+void DateTime::resetTime(uint8_t hh, uint8_t mm, uint8_t ss)
+{
+    this->hh = hh;
+    this->mm = mm;
+    this->ss = ss;
+}
+void DateTime::adjust(int minutes)
+{
+    long tmp, mod, nxt;
+
+    tmp = mm + minutes;
+    nxt = tmp / 60;// hours
+    mod = abs(tmp) % 60;
+    mod = mod * Signum(tmp) + 60;
+    mod %= 60;
+    mm = mod;
+
+    tmp = nxt + hh;
+    nxt = tmp / 24;
+    mod = abs(tmp) % 24;
+    mod = mod * Signum(tmp) + 24;
+    mod %= 24;
+    hh = mod;
+
+    tmp = nxt + d;
+    mod = LengthOfMonth();
+
+    if (tmp > mod)
+    {
+        tmp -= mod;
+        d = tmp + 1;
+        m++;
+    }
+    if (tmp < 1)
+    {
+        m--;
+        mod = LengthOfMonth();
+        d = tmp + mod;
+    }
+
+    tmp=yOff;
+    if(m == 0)
+    {
+        m = 12;
+        tmp--;
+    }
+
+    if(m > 12)
+    {
+        m = 1;
+        tmp++;
+    }
+
+    tmp += 100;
+    tmp %= 100;
+    yOff = tmp;
+}
+uint8_t DateTime::DayOfWeek()
+{
+    int      year  = yOff + 2000;
+    uint8_t  month = m;
+    uint8_t  day   = d;
+
+    if (month < 3)
+    {
+        month += 12;
+        year--;
+    }
+
+    day = ((13 * month + 3) / 5 + day + year + year / 4 - year / 100 + year / 400 ) % 7;
+    day = (day + 1) % 7;
+
+    return day + 1;
+}
+
+uint8_t DateTime::LengthOfMonth()
+{
+    int      year  = yOff + 2000;
+    uint8_t  month = m;
+
+    if (month == 2)
+    {
+        if (IsLeapYear(year))
+            return 29;
+        return 28;
+    }
+
+    uint8_t odd = (month & 1) == 1;
+
+    if (month > 7)
+        odd  = !odd;
+
+    if (odd)
+        return 31;
+
+    return 30;
+}
+
+bool DateTime::IsLeapYear(int year)
+{
+    return ((year % 4 == 0 && year % 100 != 0) || year % 400 == 0);
+}
+

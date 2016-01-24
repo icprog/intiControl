@@ -31,7 +31,7 @@
 
 const float TKeeper::MOON_PERIOD = 29.530588853f;
 
-TKeeper::TKeeper(TKeeper::location & loc, int tz)
+TKeeper::TKeeper(const location & loc, int tz)
     : m_location(loc), m_tz(tz)
 {
     setDstRules(3, 2, 11, 1, 60);
@@ -47,9 +47,9 @@ bool TKeeper::setTimezone(int & tz)
     return ret;
 }
 
-bool TKeeper::setLocation(location & loc)
+bool TKeeper::setLocation(const location & loc)
 {
-    bool ret = (Absolute(loc.longitude) < 180.0) && (Absolute(loc.latitude) < 90.0);
+    bool ret = (fabs(loc.longitude) < 180.0) && (fabs(loc.latitude) < 90.0);
 
     if (ret)
         m_location = loc;
@@ -74,32 +74,32 @@ bool TKeeper::setDstRules(uint8_t sm, uint8_t sw, uint8_t em, uint8_t ew, uint8_
     return true;
 }
 
-void TKeeper::GMT(uint8_t * now)
+void TKeeper::GMT(DateTime &now)
 {
-    Adjust(now, -m_tz);
+    now.adjust(-m_tz);
 }
 
-void TKeeper::DST(uint8_t *now)
+void TKeeper::DST(DateTime &now)
 {
-    if (InDst(now))
-        Adjust(now, dstadv);
+    if (now.InDst(now))
+        now.adjust(dstadv);
 }
 
-bool TKeeper::SunRise(uint8_t *when)
+bool TKeeper::SunRise(DateTime &when)
 {
     return ComputeSun(when, true);
 }
 
-bool TKeeper::SunSet(uint8_t *when)
+bool TKeeper::SunSet(DateTime &when)
 {
     return ComputeSun(when, false);
 }
 
-float TKeeper::MoonPhase(uint8_t * when)
+float TKeeper::MoonPhase(const DateTime & when)
 {
     // we compute the number of days since Jan 6, 2000
     // at which time the moon was 'new'
-    long  d = DayNumber(2000 + when[YEAR], when[MONTH], when[DAY]) - DayNumber(2000, 1, 6);
+    long  d = DayNumber(2000 + when.year(), when.month(), when.day()) - DayNumber(2000, 1, 6);
     float p = d / MOON_PERIOD;
 
     d  = p;
@@ -108,7 +108,7 @@ float TKeeper::MoonPhase(uint8_t * when)
     return p;
 }
 
-void TKeeper::Sidereal(uint8_t * when, bool local)
+void TKeeper::Sidereal(DateTime &when, bool local)
 {
     uint64_t second, d;
     long minute;
@@ -133,10 +133,10 @@ void TKeeper::Sidereal(uint8_t * when, bool local)
     GMT(when);
 
     // Get number of days since our epoch of Jan 1, 2000
-    d = DayNumber(when[YEAR] + 2000, when[MONTH], when[DAY]) - DayNumber(2000, 1, 1);
+    d = DayNumber(when.year() + 2000, when.month(), when.day()) - DayNumber(2000, 1, 1);
 
     // compute calendar seconds since the epoch
-    second = d * 86400LL + when[HOUR] * 3600LL + when[MINUTE] * 60LL + when[SECOND];
+    second = d * 86400LL + when.hour() * 3600LL + when.minute() * 60LL + when.second();
 
     // multiply by ratio of calendar to sidereal time
     second *= 1002737909LL;
@@ -159,104 +159,16 @@ void TKeeper::Sidereal(uint8_t * when, bool local)
     minute = second / 60LL;
     d = minute * 60LL;
 
-    when[SECOND] = second - d;
-    when[HOUR]   = 0;
-    when[MINUTE] = 0;
+    when.resetTime(0, 0, second - d);
 
-    Adjust(when, minute);
+    when.adjust(minute);
 }
 
-uint8_t TKeeper::DayOfWeek(uint8_t * when)
-{
-    int      year  = when[YEAR] + 2000;
-    uint8_t  month = when[MONTH];
-    uint8_t  day   = when[DAY];
-
-    if (month < 3)
-    {
-        month += 12;
-        year--;
-    }
-
-    day = ((13 * month + 3) / 5 + day + year + year / 4 - year / 100 + year / 400 ) % 7;
-    day = (day + 1) % 7;
-
-    return day + 1;
-}
-
-uint8_t TKeeper::LengthOfMonth(uint8_t * when)
-{
-    int     yr   = when[YEAR] + 2000;
-    uint8_t mnth = when[MONTH];
-
-    if (mnth == 2)
-    {
-        if (IsLeapYear(yr))
-            return 29;
-        return 28;
-    }
-
-    uint8_t odd = (mnth & 1) == 1;
-
-    if (mnth > 7)
-        odd  = !odd;
-
-    if (odd)
-        return 31;
-
-    return 30;
-}
-
-bool TKeeper::IsLeapYear(int yr)
-{
-    return ( (yr % 4 == 0 && yr % 100 != 0) || yr % 400 == 0);
-}
-
-bool TKeeper::InDst(uint8_t * p)
-{
-    // input is assumed to be standard time
-    char nSundays, prevSunday, weekday;
-
-    if(p[MONTH]<dstm1 || p[MONTH]>dstm2) return false;
-    if(p[MONTH]>dstm1 && p[MONTH]<dstm2) return true;
-
-    // if we get here, we are in either the start or end month
-
-    // How many sundays so far this month?
-    weekday=DayOfWeek(p);
-    nSundays=0;
-    prevSunday=p[DAY]-weekday+1;
-    if(prevSunday>0){
-        nSundays=prevSunday/7;
-        nSundays++;
-    }
-
-    if(p[MONTH]==dstm1){
-        if(nSundays<dstw1) return false;
-        if(nSundays>dstw1) return true;
-        if(weekday>1) return true;
-        if(p[HOUR]>1) return true;
-        return false;
-    }
-
-    if(nSundays<dstw2) return true;
-    if(nSundays>dstw2) return false;
-    if(weekday>1) return false;
-    if(p[HOUR]>1) return false;
-    return true;
-}
 
 
 //====Utility====================
 
 // rather than import yet another library, we define sgn and abs ourselves
-char TKeeper::Signum(int n)
-{
-    if (n < 0)
-        return -1;
-
-    return 1;
-}
 long TKeeper::Absolute(long n)
 {
     if (n < 0)
@@ -279,27 +191,27 @@ int TKeeper::Absolute(int n)
 
     return n;
 }
-
-void TKeeper::Adjust(uint8_t * when, long offset)
+/*
+void TKeeper::Adjust(DateTime *when, long offset)
 {
     long tmp, mod, nxt;
 
     // offset is in minutes
-    tmp = when[MINUTE] + offset; // minutes
+    tmp = when->minute() + offset; // minutes
     nxt = tmp / 60;// hours
     mod = Absolute(tmp) % 60;
-    mod = mod*Signum(tmp) + 60;
+    mod = mod * Signum(tmp) + 60;
     mod %= 60;
     when[MINUTE] = mod;
 
-    tmp = nxt + when[HOUR];
+    tmp = nxt + when->hour();
     nxt = tmp / 24;// days
     mod = Absolute(tmp) % 24;
     mod = mod*Signum(tmp) + 24;
     mod %= 24;
     when[HOUR]=mod;
 
-    tmp = nxt + when[DAY];
+    tmp = nxt + when->day();
     mod = LengthOfMonth(when);
 
     if (tmp > mod)
@@ -332,11 +244,11 @@ void TKeeper::Adjust(uint8_t * when, long offset)
     tmp %= 100;
     when[YEAR] = tmp;
 }
-
-bool TKeeper::ComputeSun(uint8_t *when, bool rs)
+*/
+bool TKeeper::ComputeSun(DateTime &when, bool rs)
 {
-    uint8_t month = when[MONTH] - 1;
-    uint8_t day   = when[DAY]   - 1;
+    uint8_t month = when.month() - 1;
+    uint8_t day   = when.day()   - 1;
 
     float lon = -m_location.longitude / 57.295779513082322;
     float lat =  m_location.latitude  / 57.295779513082322;
@@ -362,7 +274,7 @@ bool TKeeper::ComputeSun(uint8_t *when, bool rs)
     float ha = (cos(1.585340737228125) / (cos(lat) * cos(decl)) - tan(lat) * tan(decl));
 
     // we're in the (ant)arctic and there is no rise(or set) today!
-    if (Absolute(ha) > 1.0)
+    if (fabs(ha) > 1.0)
         return false;
 
     ha = acos(ha);
@@ -376,18 +288,59 @@ bool TKeeper::ComputeSun(uint8_t *when, bool rs)
     minutes += m_tz;
 
     // adjust the time array by minutes
-    when[HOUR]   = 0;
-    when[MINUTE] = 0;
-    when[SECOND] = 0;
+    when.resetTime();
 
-    Adjust(when, minutes);
+    when.adjust(minutes);
 
     return true;
 }
 
-long TKeeper::DayNumber(uint16_t y, uint8_t m, uint8_t d){
+long TKeeper::DayNumber(uint16_t y, uint8_t m, uint8_t d)
+{
 
     m = (m + 9) % 12;
-    y = y - m/10;
-    return 365*y + y/4 - y/100 + y/400 + (m*306 + 5)/10 + d - 1 ;
+    y = y - m / 10;
+
+    return 365 * y + y / 4 - y / 100 + y / 400 + (m * 306 + 5) / 10 + d - 1;
+}
+bool TKeeper::InDst(const DateTime & p)
+{
+    // input is assumed to be standard time
+    char nSundays, prevSunday, weekday;
+
+    if(p.month()< dstm1 || p.month() > dstm2)
+        return false;
+
+    if(p.month() > dstm1 && p.month() < dstm2)
+        return true;
+
+    // if we get here, we are in either the start or end month
+
+    // How many sundays so far this month?
+    weekday    = p.dayOfWeek();
+    nSundays   = 0;
+    prevSunday = p.day() - weekday + 1;
+
+    if(prevSunday > 0)
+    {
+        nSundays = prevSunday / 7;
+        nSundays++;
+    }
+
+    if(p.month() == dstm1)
+    {
+        if(nSundays < dstw1) return false;
+        if(nSundays > dstw1) return true;
+        if(weekday > 1) return true;
+        if(p.hour() > 1) return true;
+
+        return false;
+    }
+
+    if(nSundays < dstw2) return true;
+    if(nSundays > dstw2) return false;
+    if(weekday > 1) return false;
+    if(p.hour() > 1) return false;
+
+    return true;
 }

@@ -30,47 +30,56 @@
 class TKeeper
 {
 public:
-    struct location
+    class location
     {
+    public:
+        // default location for barrier reef
+        location(float lat = 18.2861, float lon = 147.7000)
+            : latitude(lat), longitude(lon)
+        {}
+
         float latitude;
         float longitude;
     };
 
-    TKeeper(location & loc, int tz);
+    // default timezone for Sydney, Australia
+    TKeeper(const location & loc, int tz = -600);
 
     // configuration
-    bool setLocation(location &);
+    bool setLocation(const location &);
     bool setTimezone(int & );
     bool setDstRules(uint8_t,uint8_t,uint8_t,uint8_t,uint8_t);
 
     // Political
-    void GMT(uint8_t *);
-    void DST(uint8_t *);
+    void GMT(DateTime & now);
+    void DST(DateTime & now);
 
     // Solar
-    bool  SunRise  (uint8_t *);
-    bool  SunSet   (uint8_t *);
-    float MoonPhase(uint8_t *);
-    void  Sidereal (uint8_t *, bool);
+    bool  SunRise  (DateTime &);
+    bool  SunSet   (DateTime &);
+    float MoonPhase(const DateTime &);
+    void  Sidereal (DateTime &, bool);
+
+    bool InDst(const DateTime & p);
 
 private:
     location m_location;
+    // number of minutes to offset for timezone
     int m_tz;
 
     uint8_t dstm1, dstw1, dstm2, dstw2, dstadv;
 
-    void Adjust    (uint8_t *, long);
-    bool ComputeSun(uint8_t *, bool);
+    //void Adjust    (DateTime &, long);
+    bool ComputeSun(DateTime &, bool);
 
-    char   Signum  (int);
     int    Absolute(int);
     long   Absolute(long);
     float  Absolute(float);
 
     long DayNumber(uint16_t, uint8_t, uint8_t);
-    bool InDst(uint8_t *);
-    uint8_t DayOfWeek(uint8_t * when);
-    uint8_t LengthOfMonth(uint8_t * when);
+    //bool InDst(uint8_t *);
+    //uint8_t DayOfWeek(uint8_t * when);
+    //uint8_t LengthOfMonth(uint8_t * when);
 
     bool IsLeapYear(int yr);
 
