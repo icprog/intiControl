@@ -36,10 +36,9 @@ public:
     bool send(void *data, uint16_t len);
 
 private:
-    //static const uint8_t GENERIC_REPORT_SIZE = 25;
-    uint8_t m_buffer[Message::m_length];
-    USB_ClassInfo_HID_Device_t m_interface;
+    uint8_t * m_buffer;
+    USB_ClassInfo_HID_Device_t *m_interface;
 
-    bool m_attached;
-    bool m_data;
+    bool *m_attached;
+    bool *m_data;
 };

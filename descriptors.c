@@ -64,14 +64,22 @@
  */
 const USB_Descriptor_HIDReport_Datatype_t PROGMEM GenericReport[] =
 {
-    /* Use the HID class driver's standard Vendor HID report.
-     *  Vendor Usage Page: 0
-     *  Vendor Collection Usage: 1
-     *  Vendor Report IN Usage: 2
-     *  Vendor Report OUT Usage: 3
-     *  Vendor Report Size: GENERIC_REPORT_SIZE
-     */
-    HID_DESCRIPTOR_VENDOR(0x00, 0x01, 0x02, 0x03, GENERIC_REPORT_SIZE)
+    HID_RI_USAGE_PAGE(16, 0xFF00), /* Vendor Page 0 */
+    HID_RI_USAGE(8, 0x01), /* Vendor Usage 1 */
+    HID_RI_COLLECTION(8, 0x01), /* Vendor Usage 1 */
+        HID_RI_USAGE(8, 0x02), /* Vendor Usage 2 */
+        HID_RI_LOGICAL_MINIMUM(8, 0x00),
+        HID_RI_LOGICAL_MAXIMUM(8, 0xFF),
+        HID_RI_REPORT_SIZE(8, 0x08),
+        HID_RI_REPORT_COUNT(8, GENERIC_REPORT_SIZE),
+        HID_RI_INPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE),
+        HID_RI_USAGE(8, 0x03), /* Vendor Usage 3 */
+        HID_RI_LOGICAL_MINIMUM(8, 0x00),
+        HID_RI_LOGICAL_MAXIMUM(8, 0xFF),
+        HID_RI_REPORT_SIZE(8, 0x08),
+        HID_RI_REPORT_COUNT(8, GENERIC_REPORT_SIZE),
+        HID_RI_OUTPUT(8, HID_IOF_DATA | HID_IOF_VARIABLE | HID_IOF_ABSOLUTE | HID_IOF_NON_VOLATILE),
+    HID_RI_END_COLLECTION(0),
 };
 
 /** Device descriptor structure. This descriptor, located in FLASH memory, describes the overall
@@ -83,7 +91,7 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptor =
 {
     .Header                 = {.Size = sizeof(USB_Descriptor_Device_t), .Type = DTYPE_Device},
 
-    .USBSpecification       = VERSION_BCD(2,0,0),
+    .USBSpecification       = VERSION_BCD(1,1,0),
     .Class                  = USB_CSCP_NoDeviceClass,
     .SubClass               = USB_CSCP_NoDeviceSubclass,
     .Protocol               = USB_CSCP_NoDeviceProtocol,
@@ -96,7 +104,7 @@ const USB_Descriptor_Device_t PROGMEM DeviceDescriptor =
 
     .ManufacturerStrIndex   = STRING_ID_Manufacturer,
     .ProductStrIndex        = STRING_ID_Product,
-    .SerialNumStrIndex      = STRING_ID_Serial,
+    .SerialNumStrIndex      = NO_DESCRIPTOR,
 
     .NumberOfConfigurations = FIXED_NUM_CONFIGURATIONS
 };
@@ -130,7 +138,7 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
             .InterfaceNumber        = INTERFACE_ID_GenericHID,
             .AlternateSetting       = 0x00,
 
-            .TotalEndpoints         = 1,
+            .TotalEndpoints         = 2,
 
             .Class                  = HID_CSCP_HIDClass,
             .SubClass               = HID_CSCP_NonBootSubclass,
@@ -159,6 +167,16 @@ const USB_Descriptor_Configuration_t PROGMEM ConfigurationDescriptor =
             .EndpointSize           = GENERIC_EPSIZE,
             .PollingIntervalMS      = 0x05
         },
+
+    .HID_ReportOUTEndpoint =
+        {
+            .Header                 = {.Size = sizeof(USB_Descriptor_Endpoint_t), .Type = DTYPE_Endpoint},
+
+            .EndpointAddress        = GENERIC_OUT_EPADDR,
+            .Attributes             = (EP_TYPE_INTERRUPT | ENDPOINT_ATTR_NO_SYNC | ENDPOINT_USAGE_DATA),
+            .EndpointSize           = GENERIC_EPSIZE,
+            .PollingIntervalMS      = 0x05
+        }
 };
 
 /** Language descriptor structure. This descriptor, located in FLASH memory, is returned when the host requests
@@ -187,10 +205,9 @@ const USB_Descriptor_String_t PROGMEM SerialString = USB_STRING_DESCRIPTOR(L"878
  *  is called so that the descriptor details can be passed back and the appropriate descriptor sent back to the
  *  USB host.
  */
-uint16_t CALLBACK_USB_GetDescriptor(
-        const uint16_t wValue,
-        const uint16_t wIndex,
-        const void** const DescriptorAddress)
+uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,
+                                    const uint16_t wIndex,
+                                    const void** const DescriptorAddress)
 {
     const uint8_t  DescriptorType   = (wValue >> 8);
     const uint8_t  DescriptorNumber = (wValue & 0xFF);
@@ -223,11 +240,6 @@ uint16_t CALLBACK_USB_GetDescriptor(
                     Address = &ProductString;
                     Size    = pgm_read_byte(&ProductString.Header.Size);
                     break;
-                case STRING_ID_Serial:
-                        Address = &SerialString;
-                    Size    = pgm_read_byte(&SerialString.Header.Size);
-                    break;
-
             }
 
             break;
@@ -244,4 +256,3 @@ uint16_t CALLBACK_USB_GetDescriptor(
     *DescriptorAddress = Address;
     return Size;
 }
-
