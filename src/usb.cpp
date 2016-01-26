@@ -28,7 +28,9 @@
 
 uint8_t * buffer;
 USB_ClassInfo_HID_Device_t * interface;
+
 bool * usbAttached;
+bool * usbData;
 
 //USB_ClassInfo_HID_Device_t Generic_HID_Interface;
 
@@ -68,16 +70,7 @@ bool CALLBACK_HID_Device_CreateHIDReport(USB_ClassInfo_HID_Device_t* const HIDIn
                                          void* ReportData,
                                          uint16_t* const ReportSize)
 {
-    uint8_t * Data = (uint8_t*)ReportData;
-
-    Data[0] = hack[0];
-    Data[1] = hack[1];
-    Data[2] = hack[2];
-    Data[3] = hack[3];
-
-    *ReportSize = GENERIC_REPORT_SIZE;
-
-    return false;
+    return true;
 }
 
 void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDInterfaceInfo,
@@ -86,15 +79,14 @@ void CALLBACK_HID_Device_ProcessHIDReport(USB_ClassInfo_HID_Device_t* const HIDI
                                           const void* ReportData,
                                           const uint16_t ReportSize)
 {
-    uint8_t* Data       = (uint8_t*)ReportData;
-    hack[0] = Data[0];
-    hack[1] = Data[1];
-    hack[2] = Data[2];
-    hack[3] = Data[3];
+    buffer  = (uint8_t*)ReportData;
+
+    *usbData = true;
 }
 
 
 Usb::Usb()
+    : m_attached(false), m_data(false)
 {
     /* Disable watchdog if enabled by bootloader/fuses */
     MCUSR &= ~(1 << WDRF);
@@ -115,6 +107,7 @@ Usb::Usb()
 
     interface    = &m_interface;
     usbAttached  = &m_attached;
+    usbData      = &m_data;
     buffer       = m_buffer;
 }
 
@@ -123,10 +116,26 @@ bool Usb::tick()
     HID_Device_USBTask(interface);
     USB_USBTask();
 
-    return usbAttached;
+    return m_data;
 }
 
 bool Usb::attached()
 {
     return m_attached;
+}
+const Message * Usb::read()
+{
+    m_data = false;
+    return (Message*)buffer;
+}
+bool Usb::send(void * data, uint16_t len)
+{
+    bool ret = CALLBACK_HID_Device_CreateHIDReport(
+                &m_interface,
+                0,
+                HID_REPORT_ITEM_In,
+                data,
+                &len);
+
+    return ret;
 }

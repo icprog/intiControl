@@ -55,7 +55,6 @@ public:
         return TOTALCH;
     }
 
-private:
     enum Channel
     {
         WHITE      = 0,
@@ -68,6 +67,7 @@ private:
         TOTALCH    = 7
     };
 
+private:
     // need to be seperate (no container)
     // due to avr-gcc limitation(s)
     // fair enough as embedded, declare all memory

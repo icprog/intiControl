@@ -22,6 +22,8 @@
 #include <LUFA/Drivers/USB/USB.h>
 #include <LUFA/Platform/Platform.h>
 
+#include <message.h>
+
 class Usb
 {
 public:
@@ -30,10 +32,14 @@ public:
     bool tick();
     bool attached();
 
+    const Message *read();
+    bool send(void *data, uint16_t len);
+
 private:
-    static const uint8_t GENERIC_REPORT_SIZE = 25;
-    uint8_t m_buffer[GENERIC_REPORT_SIZE];
+    //static const uint8_t GENERIC_REPORT_SIZE = 25;
+    uint8_t m_buffer[Message::m_length];
     USB_ClassInfo_HID_Device_t m_interface;
 
     bool m_attached;
+    bool m_data;
 };

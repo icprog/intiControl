@@ -64,14 +64,51 @@ int main(void)
 
     for (;;)
     {
-        usb.tick();
+        if (usb.tick())
+        {
+            // get data from USB
+            const Message * message = usb.read();
+
+            switch (message->m_modifier)
+            {
+            case Message::SET_MAX:
+            {
+                control.setMax((const SetMax*)message);
+                break;
+            }
+
+            case Message::SET_MODE:
+            {
+                break;
+            }
+
+            case Message::SET_TIME:
+            {
+                break;
+            }
+
+            case Message::SET_VALUE:
+            {
+                break;
+            }
+
+            default:
+            {
+                break;
+            }
+            }
+        }
+
         // one second tick
         if (rtc.tick())
         {
-            control.tick(rtc.now());
+            DateTime now = rtc.now();
+            control.tick(now);
             if (usb.attached())
             {
                 // send packets to client
+                Status current = control.getCurrent(now);
+                usb.send(&current, sizeof(current));
             }
         }
     }

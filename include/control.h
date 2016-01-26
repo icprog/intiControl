@@ -22,6 +22,7 @@
 #include <datetime.h>
 #include <settings.h>
 #include <led.h>
+#include <message.h>
 
 class Control
 {
@@ -29,6 +30,9 @@ public:
     Control(const Settings::Emitters &led, const DateTime &now);
 
     void tick(const DateTime & time);
+
+    Status getCurrent(long time);
+    void setMax(const SetMax * setMax);
 
 private:
     void calcTimes(const DateTime &time);
