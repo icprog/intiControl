@@ -20,6 +20,7 @@
 #pragma once
 
 #include <inttypes.h>
+#include <AppConfig.h>
 #include <led.h>
 
 class Message
@@ -41,7 +42,7 @@ public:
 
     virtual uint16_t length() = 0;
 
-    static const uint8_t m_length = 22;
+    static const uint8_t m_length = GENERIC_REPORT_SIZE;
 
 private:
 };
