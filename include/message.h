@@ -26,90 +26,73 @@
 class Message
 {
 public:
-    enum Modifier
+    enum msgType
     {
-        STATUS = 0,
+        UNKNOWN,
+        STATUS,
         SET_TIME,
         SET_MAX,
-        SET_MODE,
-        SET_VALUE
-    } m_modifier;
+        SET_MODE
+    };
 
-    Message(Modifier modifier)
-        : m_modifier(modifier)
-    {
-    }
-
-    virtual uint16_t length() = 0;
-
-    static const uint8_t m_length = GENERIC_REPORT_SIZE;
-
-private:
-};
-
-class Status : public Message
-{
-public:
-    Status(long)
-        : Message(STATUS)
+    Message(msgType type = UNKNOWN, uint8_t len = sizeof(msgType) + sizeof(uint16_t))
+        :m_type(type), m_len(len)
     {}
 
-    uint16_t length()
-    {
-        return sizeof(this);
-    }
+    operator msgType () const { return m_type; }
+    operator uint16_t() const { return m_len;  }
 
-    long     m_time;
-    uint16_t m_currValues[Led::TOTALCH];
+protected:
+    msgType  m_type;
+    uint16_t m_len;
 };
 
-class SetTime : public Message
+class msgStatus : public Message
 {
 public:
-    SetTime()
-        : Message(SET_TIME)
+    msgStatus()
+        :Message(STATUS, sizeof(long) + Led::TOTALCH * sizeof(uint16_t))
     {}
 
-    uint16_t length()
-    {
-        return sizeof(this);
-    }
-
-    long     time;
+    long      m_time;
+    uint16_t  m_currValues[Led::TOTALCH];
 };
 
-class SetMax : public Message
+class msgSetTime : public Message
 {
 public:
-    SetMax()
-        : Message(SET_MAX)
+    msgSetTime()
+        :Message(SET_TIME, sizeof(long))
     {}
 
-    uint16_t length()
-    {
-        return sizeof(this);
-    }
-
-    uint16_t  maxValues[Led::TOTALCH];
+    long      m_time;
 };
 
-class SetMode : public Message
+class msgSetMax : public Message
 {
 public:
-    SetMode()
-        : Message(SET_MODE)
+    msgSetMax()
+        :Message(SET_MAX, sizeof(long) + Led::TOTALCH * sizeof(uint16_t))
+    {}
+
+    long      m_time;
+    uint16_t  m_maxValues[Led::TOTALCH];
+};
+
+class msgSetMode : public Message
+{
+public:
+    msgSetMode()
+        :Message(SET_MODE, Led::TOTALCH * sizeof(uint16_t))
     {}
 
     // allowable modes
-    enum m_mode
+    enum mode
     {
         MANUAL,
         SEMI_AUTOMATIC,
         FULLY_AUTOMATIC,
     };
 
-    uint16_t length()
-    {
-        return sizeof(this);
-    }
+    mode      m_currMode;
 };

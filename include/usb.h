@@ -16,7 +16,7 @@
  *
  *
  */
-#if 0
+
 #pragma once
 
 #include <LUFA/Drivers/USB/USB.h>
@@ -33,7 +33,7 @@ public:
     bool attached();
 
     const Message *read();
-    bool send(void *data, uint16_t len);
+    bool send(const Message &data);
 
 private:
     uint8_t * m_buffer;

@@ -73,9 +73,9 @@ bool Control::hitSunset(const DateTime & time)
 
     return ret;
 }
-Status Control::getCurrent(long time)
+msgStatus Control::getCurrent(long time)
 {
-    Status ret(time);
+    msgStatus ret;
 
     for (int i = 0; i < Led::getMaxCh(); i++)
     {
@@ -83,16 +83,18 @@ Status Control::getCurrent(long time)
         ret.m_currValues[i] = (uint16_t)config.value;
     }
 
+    ret.m_time = time;
+
     return ret;
 }
-void Control::setMax(const SetMax * setMax)
+void Control::setMax(const msgSetMax *setMax)
 {
     for (int i = 0; i < Led::getMaxCh(); i++)
     {
         Led::Config config = m_led.getConfig(i);
 
         // work out what the required step size is
-        config.max = setMax->maxValues[i];
+        config.max = setMax->m_maxValues[i];
 
         m_led.setConfig(i, config);
     }

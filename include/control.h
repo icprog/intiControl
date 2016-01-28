@@ -31,8 +31,8 @@ public:
 
     void tick(const DateTime & time);
 
-    Status getCurrent(long time);
-    void setMax(const SetMax * setMax);
+    msgStatus getCurrent(long time);
+    void setMax(const msgSetMax * setMax);
 
 private:
     void calcTimes(const DateTime &time);
