@@ -21,7 +21,7 @@ TARGET       = intiController
 CPP_FILES    = $(wildcard src/*.cpp) 
 SRC          = $(TARGET).cpp descriptors.c $(CPP_FILES) $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
 LUFA_PATH    = /opt/lufa/LUFA
-CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/ -Iinclude/
+CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/ -Iinclude/ -fshort-enums 
 
 #default target
 all:

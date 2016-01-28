@@ -21,7 +21,19 @@
 
 #include <inttypes.h>
 #include <AppConfig.h>
+#include <descriptors.h>
 #include <led.h>
+
+// To make things easier on the device, we assume that all messages are of
+// the same length, defined by GENERIC_EPSIZE
+// This allows us to store an array of received messages that can be processed
+// in "slow" time by the controller
+//
+// To accomplish this, we simply allocate enough memory in the array to hold
+// a predefined number of messages.
+// Then each memory location is read by casting to Message
+// We can then read the msgType and perform one more cast to get the actual message
+
 
 class Message
 {
@@ -35,55 +47,71 @@ public:
         SET_MODE
     };
 
-    Message(msgType type = UNKNOWN, uint8_t len = sizeof(msgType) + sizeof(uint16_t))
-        :m_type(type), m_len(len)
+    Message(msgType type = UNKNOWN)
+        :m_type(type), m_len(GENERIC_EPSIZE)
     {}
 
     operator msgType () const { return m_type; }
     operator uint16_t() const { return m_len;  }
+    operator uint8_t () const { return m_len;  }
 
 protected:
     msgType  m_type;
-    uint16_t m_len;
+    const uint8_t m_len;
 };
+
+#define HEADER_LENGTH 2
+
 
 class msgStatus : public Message
 {
 public:
     msgStatus()
-        :Message(STATUS, sizeof(long) + Led::TOTALCH * sizeof(uint16_t))
+        :Message(STATUS)
     {}
 
-    long      m_time;
+    uint32_t  m_time;
     uint16_t  m_currValues[Led::TOTALCH];
+
+    // actual message size is
+    // header + 4 + 2 * 7
+    uint8_t   m_pad[GENERIC_EPSIZE - (HEADER_LENGTH + 4 + 2 * 7)];
 };
 
 class msgSetTime : public Message
 {
 public:
     msgSetTime()
-        :Message(SET_TIME, sizeof(long))
+        :Message(SET_TIME)
     {}
 
-    long      m_time;
+    uint32_t  m_time;
+
+    // actual message size is
+    // header + 4
+    uint8_t   m_pad[GENERIC_EPSIZE - (HEADER_LENGTH + 4)];
 };
 
 class msgSetMax : public Message
 {
 public:
     msgSetMax()
-        :Message(SET_MAX, sizeof(long) + Led::TOTALCH * sizeof(uint16_t))
+        :Message(SET_MAX)
     {}
 
-    long      m_time;
+    uint32_t  m_time;
     uint16_t  m_maxValues[Led::TOTALCH];
+
+    // actual message size is
+    // header + 4 + 2 * 7
+    uint8_t   m_pad[GENERIC_EPSIZE - (HEADER_LENGTH + 4 + 2 * 7)];
 };
 
 class msgSetMode : public Message
 {
 public:
     msgSetMode()
-        :Message(SET_MODE, Led::TOTALCH * sizeof(uint16_t))
+        :Message(SET_MODE)
     {}
 
     // allowable modes
@@ -94,5 +122,9 @@ public:
         FULLY_AUTOMATIC,
     };
 
-    mode      m_currMode;
+    mode m_currMode;
+
+    // actual message size is
+    // header + 1
+    uint8_t   m_pad[GENERIC_EPSIZE - (HEADER_LENGTH + 1)];
 };
