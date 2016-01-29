@@ -31,18 +31,17 @@ public:
 
     void tick(const DateTime & time);
 
-    msgStatus getCurrent(long time);
+    msgStatus getCurrent(const uint32_t &time);
     void setMax(const msgSetMax * setMax);
 
 private:
-    void calcTimes(const DateTime &time);
-
+    void calcTimes (const DateTime &time);
     bool hitSunrise(const DateTime & time);
     bool hitSunset (const DateTime & time);
 
     DateTime m_sunrise;    // time of sunrise
     DateTime m_sunset;     // time of sunset
-    int16_t  m_seconds;    // number of seconds to peak (midday)
+    uint16_t m_seconds;   // number of seconds to peak (midday)
 
     Led m_led;
 };
