@@ -29,80 +29,34 @@
 
 #define TIMER_COUNT 0x4E
 
-/** Function to process the last received report from the host.
- *
- *  \param[in] DataArray  Pointer to a buffer where the last received report has been stored
- */
+// Process message from host
 void ProcessGenericHIDReport(const uint8_t* DataArray)
 {
-    /*
-        This is where you need to process reports sent from the host to the device. This
-        function is called each time the host has sent a new report. DataArray is an array
-        holding the report sent from the host.
-    */
+    // add message to circular buffer and flag
 }
 
-/** Function to create the next report to send back to the host at the next reporting interval.
- *
- *  \param[out] DataArray  Pointer to a buffer where the next report data should be stored
- */
-void CreateGenericHIDReport(uint8_t* DataArray)
-{
-    /*
-        This is where you need to create reports to be sent to the host from the device. This
-        function is called each time the host is ready to accept a new report. DataArray is
-        an array to hold the report to the host.
-    */
-}
-#if 0
-/** Event handler for the USB_Connect event. This indicates that the device is enumerating via the status LEDs and
- *  starts the library USB task to begin the enumeration and USB management process.
- */
-void EVENT_USB_Device_Connect(void)
-{
-    /* Indicate USB enumerating */
-}
-
-/** Event handler for the USB_Disconnect event. This indicates that the device is no longer connected to a host via
- *  the status LEDs and stops the USB management task.
- */
-void EVENT_USB_Device_Disconnect(void)
-{
-    /* Indicate USB not ready */
-
-}
-#endif
-/** Event handler for the USB_ConfigurationChanged event. This is fired when the host sets the current configuration
- *  of the USB device after enumeration, and configures the generic HID device endpoints.
- */
+// Event handler for the USB_ConfigurationChanged event.
+// Fired when the host sets the current configuration
+// of the USB device after enumeration, and configures the generic HID device endpoints.
 void EVENT_USB_Device_ConfigurationChanged(void)
 {
-    bool ConfigSuccess = true;
-
-    /* Setup HID Report Endpoints */
-    ConfigSuccess &= Endpoint_ConfigureEndpoint(GENERIC_IN_EPADDR, EP_TYPE_INTERRUPT, GENERIC_EPSIZE, 1);
-    ConfigSuccess &= Endpoint_ConfigureEndpoint(GENERIC_OUT_EPADDR, EP_TYPE_INTERRUPT, GENERIC_EPSIZE, 1);
-
-    /* Indicate endpoint configuration success or failure */
-
+    Endpoint_ConfigureEndpoint(GENERIC_IN_EPADDR, EP_TYPE_INTERRUPT, GENERIC_EPSIZE, 1);
+    Endpoint_ConfigureEndpoint(GENERIC_OUT_EPADDR, EP_TYPE_INTERRUPT, GENERIC_EPSIZE, 1);
 }
 
-/** Event handler for the USB_ControlRequest event. This is used to catch and process control requests sent to
- *  the device from the USB host before passing along unhandled control requests to the library for processing
- *  internally.
- */
+// Event handler for the USB_ControlRequest event.
+// This is used to catch and process control requests sent to the device from
+// the USB host before passing along unhandled control requests to the library for processing
+// internally.
 void EVENT_USB_Device_ControlRequest(void)
 {
     uint8_t GenericData[GENERIC_REPORT_SIZE];
 
-    /* Handle HID Class specific requests */
     switch (USB_ControlRequest.bRequest)
     {
     case HID_REQ_GetReport:
         if (USB_ControlRequest.bmRequestType == (REQDIR_DEVICETOHOST | REQTYPE_CLASS | REQREC_INTERFACE))
         {
-            CreateGenericHIDReport(GenericData);
-
             Endpoint_ClearSETUP();
 
             /* Write the report data to the control endpoint */
@@ -111,6 +65,7 @@ void EVENT_USB_Device_ControlRequest(void)
         }
 
         break;
+
     case HID_REQ_SetReport:
         if (USB_ControlRequest.bmRequestType == (REQDIR_HOSTTODEVICE | REQTYPE_CLASS | REQREC_INTERFACE))
         {
@@ -119,8 +74,6 @@ void EVENT_USB_Device_ControlRequest(void)
             /* Read the report data from the control endpoint */
             Endpoint_Read_Control_Stream_LE(&GenericData, sizeof(GenericData));
             Endpoint_ClearIN();
-
-            ProcessGenericHIDReport(GenericData);
         }
 
         break;
@@ -134,45 +87,25 @@ void HID_Task(void)
 
     Endpoint_SelectEndpoint(GENERIC_OUT_EPADDR);
 
-    /* Check to see if a packet has been sent from the host */
+    // Check to see if we have received a packet from the host
     if (Endpoint_IsOUTReceived())
     {
-        /* Check to see if the packet contains data */
+        // Check to see if the packet contains data
         if (Endpoint_IsReadWriteAllowed())
         {
-            /* Create a temporary buffer to hold the read in report from the host */
+            // get a buffer from our buffer chain
             uint8_t GenericData[GENERIC_REPORT_SIZE];
 
-            /* Read Generic Report Data */
+            // Read Generic Report Data
             Endpoint_Read_Stream_LE(&GenericData, sizeof(GenericData), NULL);
 
-            /* Process Generic Report Data */
+            // Add this to our circular buffer
             ProcessGenericHIDReport(GenericData);
         }
 
-        /* Finalize the stream transfer to send the last packet */
+        // Finalize the stream transfer to send the last packet
         Endpoint_ClearOUT();
     }
-
-#if 0
-    Endpoint_SelectEndpoint(GENERIC_IN_EPADDR);
-
-    /* Check to see if the host is ready to accept another packet */
-    if (Endpoint_IsINReady())
-    {
-        /* Create a temporary buffer to hold the report to send to the host */
-        uint8_t GenericData[GENERIC_REPORT_SIZE];
-
-        /* Create Generic Report Data */
-        CreateGenericHIDReport(GenericData);
-
-        /* Write Generic Report Data */
-        Endpoint_Write_Stream_LE(&GenericData, sizeof(GenericData), NULL);
-
-        /* Finalize the stream transfer to send the last packet */
-        Endpoint_ClearIN();
-    }
-#endif
 }
 
 ISR(TIMER0_OVF_vect)
@@ -180,7 +113,7 @@ ISR(TIMER0_OVF_vect)
     TCNT0 = TIMER_COUNT;
 
     USB_USBTask();
-    //HID_Task();
+    HID_Task();
 }
 
 Usb::Usb()
@@ -222,32 +155,7 @@ const Message * Usb::read()
 {
     Message * ret = 0;
 
-    if (attached())
-    {
-        Endpoint_SelectEndpoint(GENERIC_OUT_EPADDR);
-
-        /* Check to see if a packet has been sent from the host */
-        if (Endpoint_IsOUTReceived())
-        {
-            /* Check to see if the packet contains data */
-            if (Endpoint_IsReadWriteAllowed())
-            {
-                /* Create a temporary buffer to hold the read in report from the host */
-                uint8_t GenericData[GENERIC_EPSIZE];
-
-                /* Read Generic Report Data */
-                Endpoint_Read_Stream_LE(&GenericData, sizeof(GenericData), NULL);
-
-                /* Process Generic Report Data */
-                ProcessGenericHIDReport(GenericData);
-
-                ret = (Message*)GenericData;
-            }
-
-            /* Finalize the stream transfer to send the last packet */
-            Endpoint_ClearOUT();
-        }
-    }
+    // return data from the circular buffer
 
     return ret;
 }
