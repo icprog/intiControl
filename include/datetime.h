@@ -29,7 +29,7 @@
 class DateTime
 {
 public:
-    DateTime (long t = 0);
+    DateTime (uint32_t t = 0);
 
     DateTime (uint16_t year,
               uint8_t  month,
@@ -53,15 +53,15 @@ public:
     const uint8_t  dayOfWeek() const;
 
     // 32-bit times as seconds since 1/1/2000
-    long get() const;
+    uint32_t get() const;
 
-    operator long()
+    operator uint32_t const()
     {
         return get();
     }
 
     void resetTime(uint8_t hh = 0, uint8_t mm = 0, uint8_t ss = 0);
-    void adjust(int minutes);
+    void adjust   (int minutes);
 
     uint8_t DayOfWeek();
     uint8_t LengthOfMonth();
@@ -72,5 +72,5 @@ public:
 private:
     uint8_t yOff, m, d, hh, mm, ss;
 
-    static const long SECONDS_PER_DAY = 86400L;
+    static const uint32_t SECONDS_PER_DAY = 86400L;
 };

@@ -42,7 +42,7 @@ uint16_t date2days(uint16_t y, uint8_t m, uint8_t d)
     return days + 365 * y + (y + 3) / 4 - 1;
 }
 
-long time2long(uint16_t days, uint8_t h, uint8_t m, uint8_t s)
+uint32_t time2long(uint16_t days, uint8_t h, uint8_t m, uint8_t s)
 {
     return ((days * 24L + h) * 60 + m) * 60 + s;
 }
@@ -56,7 +56,7 @@ uint8_t conv2d(const char* p)
     return 10 * v + *++p - '0';
 }
 
-DateTime::DateTime (long t)
+DateTime::DateTime (uint32_t t)
     : yOff(0), m(0), d(0), hh(0), mm(0), ss(0)
 {
     ss = t % 60;
@@ -122,10 +122,9 @@ const uint8_t DateTime::dayOfWeek() const
     return (day + 6) % 7;
 }
 
-long DateTime::get() const
+uint32_t DateTime::get() const
 {
-    uint16_t days = date2days(yOff, m, d);
-    return time2long(days, hh, mm, ss);
+    return time2long(date2days(yOff, m, d), hh, mm, ss);
 }
 void DateTime::resetTime(uint8_t hh, uint8_t mm, uint8_t ss)
 {
