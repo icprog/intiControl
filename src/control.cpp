@@ -51,7 +51,7 @@ void Control::calcTimes(const DateTime &time)
     m_seconds = m_sunset - m_sunrise;
     m_seconds /= 2;
 
-    for (int i = 0; i < Led::getMaxCh(); i++)
+    for (uint8_t i = 0; i < Led::getMaxCh(); i++)
     {
         Led::Config config = m_led.getConfig(i);
 
@@ -63,25 +63,18 @@ void Control::calcTimes(const DateTime &time)
 }
 bool Control::hitSunrise(const DateTime & time)
 {
-    bool ret = ((long)time.get() >= (long)m_sunrise.get());
-
-    return ret;
+    return (time.get() >= m_sunrise);
 }
 bool Control::hitSunset(const DateTime & time)
 {
-    bool ret = ((long)time.get() >= (long)m_sunset.get());
-
-    return ret;
+    return (time.get() >= m_sunset);
 }
-msgStatus Control::getCurrent(long time)
+msgStatus Control::getCurrent(const uint32_t &time)
 {
     msgStatus ret;
 
-    for (int i = 0; i < Led::getMaxCh(); i++)
-    {
-        Led::Config config = m_led.getConfig(i);
-        ret.m_currValues[i] = (uint16_t)config.value;
-    }
+    for (uint8_t i = 0; i < Led::getMaxCh(); i++)
+        ret.m_currValues[i] = m_led.getConfig(i).value;
 
     ret.m_time = time;
 
@@ -89,7 +82,7 @@ msgStatus Control::getCurrent(long time)
 }
 void Control::setMax(const msgSetMax *setMax)
 {
-    for (int i = 0; i < Led::getMaxCh(); i++)
+    for (uint8_t i = 0; i < Led::getMaxCh(); i++)
     {
         Led::Config config = m_led.getConfig(i);
 
