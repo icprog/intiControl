@@ -50,7 +50,7 @@ public:
 
     void tick();
 
-    static uint8_t getMaxCh()
+    static uint8_t const getMaxCh()
     {
         return TOTALCH;
     }
