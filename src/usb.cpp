@@ -40,8 +40,8 @@ void ProcessGenericHIDReport(const uint8_t* DataArray)
 // of the USB device after enumeration, and configures the generic HID device endpoints.
 void EVENT_USB_Device_ConfigurationChanged(void)
 {
-    Endpoint_ConfigureEndpoint(GENERIC_IN_EPADDR, EP_TYPE_INTERRUPT, GENERIC_EPSIZE, 1);
-    Endpoint_ConfigureEndpoint(GENERIC_OUT_EPADDR, EP_TYPE_INTERRUPT, GENERIC_EPSIZE, 1);
+    Endpoint_ConfigureEndpoint(GENERIC_IN_EPADDR,  EP_TYPE_INTERRUPT, GENERIC_EPSIZE, (1 << EPBK0));
+    Endpoint_ConfigureEndpoint(GENERIC_OUT_EPADDR, EP_TYPE_INTERRUPT, GENERIC_EPSIZE, (1 << EPBK0));
 }
 
 // Event handler for the USB_ControlRequest event.
