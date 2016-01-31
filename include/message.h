@@ -20,7 +20,6 @@
 #pragma once
 
 #include <inttypes.h>
-#include <AppConfig.h>
 #include <descriptors.h>
 #include <led.h>
 
