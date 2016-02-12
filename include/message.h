@@ -19,9 +19,18 @@
 
 #pragma once
 
+#ifndef HOST_CTRL
 #include <inttypes.h>
 #include <descriptors.h>
 #include <led.h>
+
+#define NUMBER_OF_CHANNELS Led::TOTALCH
+#else
+/** Size in bytes of the Generic HID reporting endpoint. */
+#define GENERIC_EPSIZE            24
+#define NUMBER_OF_CHANNELS         7
+#endif
+
 
 // To make things easier on the device, we assume that all messages are of
 // the same length, defined by GENERIC_EPSIZE
@@ -70,7 +79,7 @@ public:
     {}
 
     uint32_t  m_time;
-    uint16_t  m_currValues[Led::TOTALCH];
+    uint16_t  m_currValues[NUMBER_OF_CHANNELS];
 
     // actual message size is
     // header + 4 + 2 * 7
@@ -99,7 +108,7 @@ public:
     {}
 
     uint32_t  m_time;
-    uint16_t  m_maxValues[Led::TOTALCH];
+    uint16_t  m_maxValues[NUMBER_OF_CHANNELS];
 
     // actual message size is
     // header + 4 + 2 * 7
