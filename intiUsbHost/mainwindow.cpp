@@ -3,9 +3,12 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    m_usb(0x03EB, 0x204F)
 {
     ui->setupUi(this);
+
+    m_usb.start();
 }
 
 MainWindow::~MainWindow()
