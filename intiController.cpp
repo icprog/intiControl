@@ -69,7 +69,7 @@ int main(void)
     {
         // check for USB data
         // actual USB communications is handled by ISR
-        usb.tick();
+        //usb.tick();
 
         // one second tick
         if (rtc.tick())
@@ -77,11 +77,7 @@ int main(void)
             DateTime now = rtc.now();
             control.tick(now);
 
-            if (usb.attached())
-                usb.send(control.getCurrent(now));
+            usb.send(control.getCurrent(now));
         }
     }
 }
-
-
-
