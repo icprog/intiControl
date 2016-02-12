@@ -30,12 +30,6 @@
 #include <avr/wdt.h>
 #include <avr/power.h>
 
-#include "descriptors.h"
-#include "AppConfig.h"
-
-#include <LUFA/Drivers/USB/USB.h>
-#include <LUFA/Platform/Platform.h>
-
 #include <global.h>
 #include <usb.h>
 #include <rtc.h>
