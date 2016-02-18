@@ -32,8 +32,8 @@
 #define TIMER_COUNT 0x4E
 
 #define NBUFFERS  4
-static uint8_t bufferRead[NBUFFERS][GENERIC_REPORT_SIZE];
-static uint8_t bufferWrite [NBUFFERS][GENERIC_REPORT_SIZE];
+static uint8_t bufferRead [NBUFFERS][GENERIC_REPORT_SIZE];
+static uint8_t bufferWrite[NBUFFERS][GENERIC_REPORT_SIZE];
 
 uint8_t bufferReadNext;
 uint8_t bufferReadCurrent;
@@ -113,28 +113,31 @@ void EVENT_USB_Device_ControlRequest(void)
         case HID_REQ_GetReport:
             if (USB_ControlRequest.bmRequestType == (REQDIR_DEVICETOHOST | REQTYPE_CLASS | REQREC_INTERFACE))
             {
-                uint8_t GenericData[GENERIC_REPORT_SIZE];
-                CreateGenericHIDReport(GenericData);
+                //uint8_t GenericData[GENERIC_REPORT_SIZE];
+                //CreateGenericHIDReport(GenericData);
 
                 Endpoint_ClearSETUP();
 
                 /* Write the report data to the control endpoint */
-                Endpoint_Write_Control_Stream_LE(&GenericData, GENERIC_REPORT_SIZE);
+                Endpoint_Write_Control_Stream_LE(&bufferWrite[bufferWriteCurrent], GENERIC_REPORT_SIZE);
                 Endpoint_ClearOUT();
+
+                bufferWriteCurrent = (bufferWriteCurrent + 1) % NBUFFERS;
             }
 
             break;
         case HID_REQ_SetReport:
             if (USB_ControlRequest.bmRequestType == (REQDIR_HOSTTODEVICE | REQTYPE_CLASS | REQREC_INTERFACE))
             {
-                uint8_t GenericData[GENERIC_REPORT_SIZE];
+                //uint8_t GenericData[GENERIC_REPORT_SIZE];
                 Endpoint_ClearSETUP();
 
                 /* Read the report data from the control endpoint */
-                Endpoint_Read_Control_Stream_LE(&GenericData, GENERIC_REPORT_SIZE);
+                Endpoint_Read_Control_Stream_LE(&bufferRead[bufferReadCurrent], GENERIC_REPORT_SIZE);
                 Endpoint_ClearIN();
 
-                ProcessGenericHIDReport(GenericData);
+                //ProcessGenericHIDReport(GenericData);
+                bufferReadCurrent = (bufferReadCurrent + 1) % NBUFFERS;
             }
 
             break;
@@ -156,17 +159,20 @@ void HID_Task(void)
         if (Endpoint_IsReadWriteAllowed())
         {
             /* Create a temporary buffer to hold the read in report from the host */
-            uint8_t GenericData[GENERIC_REPORT_SIZE];
+            //uint8_t GenericData[GENERIC_REPORT_SIZE];
 
             /* Read Generic Report Data */
-            Endpoint_Read_Stream_LE(&GenericData, sizeof(GenericData), NULL);
+            //Endpoint_Read_Stream_LE(&GenericData, sizeof(GenericData), NULL);
+            Endpoint_Read_Stream_LE(bufferRead[bufferReadCurrent], GENERIC_REPORT_SIZE, NULL);
 
             /* Process Generic Report Data */
-            ProcessGenericHIDReport(GenericData);
+            //ProcessGenericHIDReport(GenericData);
         }
 
         /* Finalize the stream transfer to send the last packet */
         Endpoint_ClearOUT();
+
+        bufferReadCurrent = (bufferReadCurrent + 1) % NBUFFERS;
     }
 
     Endpoint_SelectEndpoint(GENERIC_IN_EPADDR);
@@ -175,16 +181,19 @@ void HID_Task(void)
     if (Endpoint_IsINReady())
     {
         /* Create a temporary buffer to hold the report to send to the host */
-        uint8_t GenericData[GENERIC_REPORT_SIZE];
+        //uint8_t GenericData[GENERIC_REPORT_SIZE];
 
         /* Create Generic Report Data */
-        CreateGenericHIDReport(GenericData);
+        //CreateGenericHIDReport(GenericData);
 
         /* Write Generic Report Data */
-        Endpoint_Write_Stream_LE(&GenericData, sizeof(GenericData), NULL);
+        //Endpoint_Write_Stream_LE(&GenericData, sizeof(GenericData), NULL);
+        Endpoint_Write_Stream_LE(bufferWrite[bufferWriteCurrent], GENERIC_REPORT_SIZE, NULL);
 
         /* Finalize the stream transfer to send the last packet */
         Endpoint_ClearIN();
+
+        bufferWriteCurrent = (bufferWriteCurrent + 1) % NBUFFERS;
     }
 }
 
@@ -240,8 +249,8 @@ const Message * Usb::read()
         switch ((Message::msgType)*ret)
         {
         case Message::SET_TIME:
-
             break;
+
         default:
             break;
         }
