@@ -32,7 +32,7 @@ public:
     bool start();
     bool stop();
 
-    bool send(uchar *data, uint len);
+    bool send(char *data, uint len);
 
 signals:
 
@@ -68,5 +68,6 @@ private:
 
     static const int NBUFFERS = 5;
     libusb_transfer * m_transfers[NBUFFERS];
+
     char m_buffer[5][24];
 };

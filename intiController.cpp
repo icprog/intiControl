@@ -61,10 +61,6 @@ int main(void)
 
     for (;;)
     {
-        // check for USB data
-        // actual USB communications is handled by ISR
-        //usb.tick();
-
         // one second tick
         if (rtc.tick())
         {

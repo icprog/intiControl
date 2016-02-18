@@ -35,8 +35,9 @@ public:
     const Message *read();
     bool send(const Message &data);
 
+    void test();
+
 private:
-    uint8_t * m_buffer;
     USB_ClassInfo_HID_Device_t *m_interface;
 
     bool *m_attached;

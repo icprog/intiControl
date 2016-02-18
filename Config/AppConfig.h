@@ -1,4 +1,4 @@
 
 #pragma once
 
-#define GENERIC_REPORT_SIZE       8
+#define GENERIC_REPORT_SIZE  20
