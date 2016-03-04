@@ -31,16 +31,6 @@
 
 #define TIMER_COUNT 0x4E
 
-#define NBUFFERS  4
-static uint8_t bufferRead [NBUFFERS][GENERIC_REPORT_SIZE];
-static uint8_t bufferWrite[NBUFFERS][GENERIC_REPORT_SIZE];
-
-uint8_t bufferReadNext;
-uint8_t bufferReadCurrent;
-
-uint8_t bufferWriteNext;
-uint8_t bufferWriteCurrent;
-
 /** Function to process the last received report from the host.
  *
  *  \param[in] DataArray  Pointer to a buffer where the last received report has been stored
@@ -52,11 +42,6 @@ void ProcessGenericHIDReport(uint8_t* DataArray)
         function is called each time the host has sent a new report. DataArray is an array
         holding the report sent from the host.
     */
-
-    //data[0] = DataArray[0];
-    //data[1] = DataArray[1];
-    //data[2] = DataArray[2];
-    //data[3] = DataArray[3];
 }
 
 /** Function to create the next report to send back to the host at the next reporting interval.
@@ -71,10 +56,6 @@ void CreateGenericHIDReport(uint8_t* DataArray)
         an array to hold the report to the host.
     */
 
-    //DataArray[0] = data[3];
-    //DataArray[1] = data[2];
-    //DataArray[2] = data[1];
-    //DataArray[3] = data[0];
 }
 
 /** Event handler for the USB_Connect event. This indicates that the device is enumerating via the status LEDs and
@@ -113,31 +94,29 @@ void EVENT_USB_Device_ControlRequest(void)
         case HID_REQ_GetReport:
             if (USB_ControlRequest.bmRequestType == (REQDIR_DEVICETOHOST | REQTYPE_CLASS | REQREC_INTERFACE))
             {
-                //uint8_t GenericData[GENERIC_REPORT_SIZE];
-                //CreateGenericHIDReport(GenericData);
+                uint8_t GenericData[GENERIC_REPORT_SIZE];
+                CreateGenericHIDReport(GenericData);
 
                 Endpoint_ClearSETUP();
 
                 /* Write the report data to the control endpoint */
-                Endpoint_Write_Control_Stream_LE(&bufferWrite[bufferWriteCurrent], GENERIC_REPORT_SIZE);
+                Endpoint_Write_Control_Stream_LE(&GenericData, sizeof(GenericData));
                 Endpoint_ClearOUT();
-
-                bufferWriteCurrent = (bufferWriteCurrent + 1) % NBUFFERS;
             }
 
             break;
         case HID_REQ_SetReport:
             if (USB_ControlRequest.bmRequestType == (REQDIR_HOSTTODEVICE | REQTYPE_CLASS | REQREC_INTERFACE))
             {
-                //uint8_t GenericData[GENERIC_REPORT_SIZE];
+                uint8_t GenericData[GENERIC_REPORT_SIZE];
+
                 Endpoint_ClearSETUP();
 
                 /* Read the report data from the control endpoint */
-                Endpoint_Read_Control_Stream_LE(&bufferRead[bufferReadCurrent], GENERIC_REPORT_SIZE);
+                Endpoint_Read_Control_Stream_LE(&GenericData, sizeof(GenericData));
                 Endpoint_ClearIN();
 
-                //ProcessGenericHIDReport(GenericData);
-                bufferReadCurrent = (bufferReadCurrent + 1) % NBUFFERS;
+                ProcessGenericHIDReport(GenericData);
             }
 
             break;
@@ -159,20 +138,17 @@ void HID_Task(void)
         if (Endpoint_IsReadWriteAllowed())
         {
             /* Create a temporary buffer to hold the read in report from the host */
-            //uint8_t GenericData[GENERIC_REPORT_SIZE];
+            uint8_t GenericData[GENERIC_REPORT_SIZE];
 
             /* Read Generic Report Data */
-            //Endpoint_Read_Stream_LE(&GenericData, sizeof(GenericData), NULL);
-            Endpoint_Read_Stream_LE(bufferRead[bufferReadCurrent], GENERIC_REPORT_SIZE, NULL);
+            Endpoint_Read_Stream_LE(&GenericData, sizeof(GenericData), NULL);
 
             /* Process Generic Report Data */
-            //ProcessGenericHIDReport(GenericData);
+            ProcessGenericHIDReport(GenericData);
         }
 
         /* Finalize the stream transfer to send the last packet */
         Endpoint_ClearOUT();
-
-        bufferReadCurrent = (bufferReadCurrent + 1) % NBUFFERS;
     }
 
     Endpoint_SelectEndpoint(GENERIC_IN_EPADDR);
@@ -181,19 +157,16 @@ void HID_Task(void)
     if (Endpoint_IsINReady())
     {
         /* Create a temporary buffer to hold the report to send to the host */
-        //uint8_t GenericData[GENERIC_REPORT_SIZE];
+        uint8_t GenericData[GENERIC_REPORT_SIZE];
 
         /* Create Generic Report Data */
-        //CreateGenericHIDReport(GenericData);
+        CreateGenericHIDReport(GenericData);
 
         /* Write Generic Report Data */
-        //Endpoint_Write_Stream_LE(&GenericData, sizeof(GenericData), NULL);
-        Endpoint_Write_Stream_LE(bufferWrite[bufferWriteCurrent], GENERIC_REPORT_SIZE, NULL);
+        Endpoint_Write_Stream_LE(&GenericData, sizeof(GenericData), NULL);
 
         /* Finalize the stream transfer to send the last packet */
         Endpoint_ClearIN();
-
-        bufferWriteCurrent = (bufferWriteCurrent + 1) % NBUFFERS;
     }
 }
 
@@ -208,11 +181,11 @@ ISR(TIMER0_OVF_vect)
 
 Usb::Usb()
 {
-    /* Disable watchdog if enabled by bootloader/fuses */
+    // Disable watchdog if enabled by bootloader/fuses
     MCUSR &= ~(1 << WDRF);
     wdt_disable();
 
-    /* Disable clock division */
+    // Disable clock division
     clock_prescale_set(clock_div_1);
 
     // setup a local ISR
@@ -221,7 +194,7 @@ Usb::Usb()
     TCNT0  = TIMER_COUNT;    // Interrupt every 10ms
     TIMSK0 = 0x01;           // enable interrupt
 
-    /* Hardware Initialization */
+    // Hardware Initialization
     USB_Init();
 
     GlobalInterruptEnable();
@@ -241,33 +214,15 @@ const Message * Usb::read()
 {
     Message * ret = 0;
 
-    // return data from the circular buffer
-    while (bufferReadNext != bufferReadCurrent)
-    {
-        ret = (Message*)&bufferRead[bufferReadNext];
 
-        switch ((Message::msgType)*ret)
-        {
-        case Message::SET_TIME:
-            break;
-
-        default:
-            break;
-        }
-
-        bufferReadNext = (bufferReadNext + 1) % NBUFFERS;
-    }
 
     return ret;
 }
 
-bool Usb::send(const Message & data)
+bool Usb::send(const Message * data)
 {
     bool ret = false;
 
-    memcpy(bufferWrite[bufferWriteNext], &data, data);
-
-    bufferWriteNext = (bufferWriteNext + 1) % NBUFFERS;
 
     return ret;
 }

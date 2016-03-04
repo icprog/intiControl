@@ -108,7 +108,7 @@
 #define GENERIC_OUT_EPADDR        (ENDPOINT_DIR_OUT | 2)
 
         /** Size in bytes of the Generic HID reporting endpoint. */
-        #define GENERIC_EPSIZE            24
+        #define GENERIC_EPSIZE            8
 
     /* Function Prototypes: */
         uint16_t CALLBACK_USB_GetDescriptor(const uint16_t wValue,

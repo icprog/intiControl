@@ -69,6 +69,7 @@ bool Control::hitSunset(const DateTime & time)
 {
     return (time.get() >= m_sunset);
 }
+#if 0
 msgStatus Control::getCurrent(const uint32_t &time)
 {
     msgStatus ret;
@@ -92,3 +93,4 @@ void Control::setMax(const msgSetMax *setMax)
         m_led.setConfig(i, config);
     }
 }
+#endif

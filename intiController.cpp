@@ -36,38 +36,27 @@
 #include <settings.h>
 #include <control.h>
 
-/** Configures the board hardware and chip peripherals for the demo's functionality. */
-void SetupHardware(void)
-{
-    /* Disable watchdog if enabled by bootloader/fuses */
-    MCUSR &= ~(1 << WDRF);
-    wdt_disable();
-
-    /* Disable clock division */
-    clock_prescale_set(clock_div_1);
-}
 
 /** Main program entry point. This routine contains the overall program flow, including initial
  *  setup of all components and the main program loop.
  */
 int main(void)
 {
-    SetupHardware();
-
     Usb      usb;
     Rtc      rtc;
     Settings settings;
     Control  control(settings.getEmitters(), rtc.now());
+    DateTime now;
 
     for (;;)
     {
         // one second tick
         if (rtc.tick())
         {
-            DateTime now = rtc.now();
+            now = rtc.now();
             control.tick(now);
-
-            usb.send(control.getCurrent(now));
         }
+
+        USB_USBTask();
     }
 }

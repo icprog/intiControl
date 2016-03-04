@@ -33,7 +33,7 @@ public:
     bool attached();
 
     const Message *read();
-    bool send(const Message &data);
+    bool send(const Message *data);
 
     void test();
 

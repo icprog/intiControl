@@ -27,10 +27,9 @@
 #define NUMBER_OF_CHANNELS Led::TOTALCH
 #else
 /** Size in bytes of the Generic HID reporting endpoint. */
-#define GENERIC_EPSIZE            24
+#define GENERIC_EPSIZE             8
 #define NUMBER_OF_CHANNELS         7
 #endif
-
 
 // To make things easier on the device, we assume that all messages are of
 // the same length, defined by GENERIC_EPSIZE
@@ -41,7 +40,6 @@
 // a predefined number of messages.
 // Then each memory location is read by casting to Message
 // We can then read the msgType and perform one more cast to get the actual message
-
 
 class Message
 {
@@ -68,71 +66,3 @@ protected:
     const uint8_t m_len;
 };
 
-#define HEADER_LENGTH 2
-
-
-class msgStatus : public Message
-{
-public:
-    msgStatus()
-        :Message(STATUS)
-    {}
-
-    uint32_t  m_time;
-    uint16_t  m_currValues[NUMBER_OF_CHANNELS];
-
-    // actual message size is
-    // header + 4 + 2 * 7
-    uint8_t   m_pad[GENERIC_EPSIZE - (HEADER_LENGTH + 4 + 2 * 7)];
-};
-
-class msgSetTime : public Message
-{
-public:
-    msgSetTime()
-        :Message(SET_TIME)
-    {}
-
-    uint32_t  m_time;
-
-    // actual message size is
-    // header + 4
-    uint8_t   m_pad[GENERIC_EPSIZE - (HEADER_LENGTH + 4)];
-};
-
-class msgSetMax : public Message
-{
-public:
-    msgSetMax()
-        :Message(SET_MAX)
-    {}
-
-    uint32_t  m_time;
-    uint16_t  m_maxValues[NUMBER_OF_CHANNELS];
-
-    // actual message size is
-    // header + 4 + 2 * 7
-    uint8_t   m_pad[GENERIC_EPSIZE - (HEADER_LENGTH + 4 + 2 * 7)];
-};
-
-class msgSetMode : public Message
-{
-public:
-    msgSetMode()
-        :Message(SET_MODE)
-    {}
-
-    // allowable modes
-    enum mode
-    {
-        MANUAL,
-        SEMI_AUTOMATIC,
-        FULLY_AUTOMATIC,
-    };
-
-    mode m_currMode;
-
-    // actual message size is
-    // header + 1
-    uint8_t   m_pad[GENERIC_EPSIZE - (HEADER_LENGTH + 1)];
-};
