@@ -9,6 +9,7 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->setupUi(this);
 
     m_usb.start();
+    //m_usb.send("AA", 1);
 }
 
 MainWindow::~MainWindow()

@@ -20,11 +20,17 @@ Usb::Usb(short vid, short pid, QObject *parent)
 
     if (!initDevice())
         throw "No device found";
+
+    for (int i = 0; i< NBUFFERS; i++)
+        m_transfers[i] = libusb_alloc_transfer(0);
 }
 
 Usb::~Usb()
 {
     close();
+
+    for (int i = 0; i< NBUFFERS; i++)
+         libusb_free_transfer(m_transfers[i]);
 
     //Exit from libusb library
     libusb_exit(m_context);
@@ -95,19 +101,6 @@ bool Usb::start()
     else
         ret = false;
 
-    if (ret)
-    {
-        m_transfers[1] = libusb_alloc_transfer(0);
-
-        libusb_fill_interrupt_transfer(m_transfers[1], (libusb_device_handle*)m_devicehandle,
-                2, (uchar*)m_buffer[1], 24, &call_fn, this, 0);
-
-        // resubmitt our buffer
-        m_error = libusb_submit_transfer(m_transfers[1]);
-
-        return !m_error;
-    }
-
     return ret;
 }
 bool Usb::stop()
@@ -129,14 +122,13 @@ bool Usb::stop()
 
     return ret;
 }
-bool Usb::send(uchar * data, uint len)
+bool Usb::send(char * data, uint len)
 {
-    m_transfers[0] = libusb_alloc_transfer(0);
+    libusb_fill_interrupt_transfer(m_transfers[0],
+            (libusb_device_handle*)m_devicehandle, 0x02,
+            (unsigned char*)data, len, &call_fn, this, 0);
 
-    libusb_fill_interrupt_transfer(m_transfers[0], (libusb_device_handle*)m_devicehandle,
-                              m_endpoint, data, len, &call_fn, this, 0);
-
-    // resubmitt our buffer
+    // submitt our buffer
     m_error = libusb_submit_transfer(m_transfers[0]);
 
     return !m_error;
@@ -180,7 +172,7 @@ void Usb::call_fn(libusb_transfer * transfer)
     }
 
     // resubmitt our buffer
-    libusb_submit_transfer(transfer);
+    libusb_free_transfer(transfer);
 }
 void * Usb::rx_thread(void * param)
 {
