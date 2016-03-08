@@ -10,7 +10,6 @@ include/led.h
 include/local_maths.h
 include/rtc.h
 include/settings.h
-include/timer.h
 include/tkeeper.h
 include/control.h
 include/usb.h

@@ -29,7 +29,9 @@
 #include <LUFA/Drivers/USB/USB.h>
 #include <LUFA/Platform/Platform.h>
 
-#define TIMER_COUNT 0x4E
+#define TIMER_COUNT 0xB1
+
+uint8_t data[4];
 
 /** Function to process the last received report from the host.
  *
@@ -42,6 +44,11 @@ void ProcessGenericHIDReport(uint8_t* DataArray)
         function is called each time the host has sent a new report. DataArray is an array
         holding the report sent from the host.
     */
+
+    data[0] = DataArray[0];
+    data[1] = DataArray[1];
+    data[2] = DataArray[2];
+    data[3] = DataArray[3];
 }
 
 /** Function to create the next report to send back to the host at the next reporting interval.
@@ -56,6 +63,10 @@ void CreateGenericHIDReport(uint8_t* DataArray)
         an array to hold the report to the host.
     */
 
+    DataArray[0] = data[0];
+    DataArray[0] = data[1];
+    DataArray[0] = data[2];
+    DataArray[0] = data[3];
 }
 
 /** Event handler for the USB_Connect event. This indicates that the device is enumerating via the status LEDs and
@@ -63,6 +74,7 @@ void CreateGenericHIDReport(uint8_t* DataArray)
  */
 void EVENT_USB_Device_Connect(void)
 {
+
 }
 
 /** Event handler for the USB_Disconnect event. This indicates that the device is no longer connected to a host via
@@ -70,6 +82,7 @@ void EVENT_USB_Device_Connect(void)
  */
 void EVENT_USB_Device_Disconnect(void)
 {
+
 }
 
 /** Event handler for the USB_ConfigurationChanged event. This is fired when the host sets the current configuration
@@ -77,9 +90,11 @@ void EVENT_USB_Device_Disconnect(void)
  */
 void EVENT_USB_Device_ConfigurationChanged(void)
 {
+    bool ConfigSuccess = true;
+
     /* Setup HID Report Endpoints */
-    Endpoint_ConfigureEndpoint(GENERIC_IN_EPADDR, EP_TYPE_INTERRUPT, GENERIC_EPSIZE, 1);
-    Endpoint_ConfigureEndpoint(GENERIC_OUT_EPADDR, EP_TYPE_INTERRUPT, GENERIC_EPSIZE, 1);
+    ConfigSuccess &= Endpoint_ConfigureEndpoint(GENERIC_IN_EPADDR, EP_TYPE_INTERRUPT, GENERIC_EPSIZE, 1);
+    ConfigSuccess &= Endpoint_ConfigureEndpoint(GENERIC_OUT_EPADDR, EP_TYPE_INTERRUPT, GENERIC_EPSIZE, 1);
 }
 
 /** Event handler for the USB_ControlRequest event. This is used to catch and process control requests sent to
@@ -170,38 +185,42 @@ void HID_Task(void)
     }
 }
 
-
 ISR(TIMER0_OVF_vect)
 {
-    TCNT0 = TIMER_COUNT;
-
-    USB_USBTask();
     HID_Task();
-}
+    USB_USBTask();
+
+    TCNT0 = TIMER_COUNT;
+};
+
+ISR(TIMER0_OVF0_vect, ISR_ALIASOF(TIMER0_OVF_vect));
 
 Usb::Usb()
 {
-    // Disable watchdog if enabled by bootloader/fuses
-    MCUSR &= ~(1 << WDRF);
-    wdt_disable();
-
-    // Disable clock division
-    clock_prescale_set(clock_div_1);
-
     // setup a local ISR
     TCCR0A = 0x00;           // normal count up timer operation
     TCCR0B = 0x05;           // div-1024 = 7812.5Hz clock
     TCNT0  = TIMER_COUNT;    // Interrupt every 10ms
-    TIMSK0 = 0x01;           // enable interrupt
+    TIMSK0 = (1 << TOIE0);   // enable interrupt
 
-    // Hardware Initialization
+    /* Disable watchdog if enabled by bootloader/fuses */
+    MCUSR &= ~(1 << WDRF);
+    wdt_disable();
+
+    /* Disable clock division */
+    clock_prescale_set(clock_div_1);
+
+    /* Hardware Initialization */
     USB_Init();
 
-    GlobalInterruptEnable();
+    sei();
 }
 
 bool Usb::tick()
 {
+    //HID_Task();
+    //USB_USBTask();
+
     return attached();
 }
 
@@ -214,15 +233,12 @@ const Message * Usb::read()
 {
     Message * ret = 0;
 
-
-
     return ret;
 }
 
 bool Usb::send(const Message * data)
 {
     bool ret = false;
-
 
     return ret;
 }

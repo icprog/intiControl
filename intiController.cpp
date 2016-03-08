@@ -43,20 +43,23 @@
 int main(void)
 {
     Usb      usb;
-    Rtc      rtc;
-    Settings settings;
-    Control  control(settings.getEmitters(), rtc.now());
-    DateTime now;
+    //Rtc      rtc;
+    //Settings settings;
+    //Control  control(settings.getEmitters(), rtc.now());
+    //DateTime now;
+
+    GlobalInterruptEnable();
 
     for (;;)
     {
+        usb.tick();
+        /*
         // one second tick
         if (rtc.tick())
         {
             now = rtc.now();
             control.tick(now);
         }
-
-        USB_USBTask();
+        */
     }
 }
