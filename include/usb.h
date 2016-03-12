@@ -19,9 +19,6 @@
 
 #pragma once
 
-#include <LUFA/Drivers/USB/USB.h>
-#include <LUFA/Platform/Platform.h>
-
 #include <message.h>
 
 class Usb
@@ -29,17 +26,5 @@ class Usb
 public:
     Usb();
 
-    bool tick();
-    bool attached();
-
-    const Message *read();
-    bool send(const Message *data);
-
-    void test();
-
 private:
-    USB_ClassInfo_HID_Device_t *m_interface;
-
-    bool *m_attached;
-    bool *m_data;
 };

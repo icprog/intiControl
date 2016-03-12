@@ -29,79 +29,95 @@
 #include <LUFA/Drivers/USB/USB.h>
 #include <LUFA/Platform/Platform.h>
 
-#define TIMER_COUNT 0xB1
+#include <datetime.h>
 
-uint8_t data[4];
+#define TIMER_COUNT 0xD1
 
-/** Function to process the last received report from the host.
- *
- *  \param[in] DataArray  Pointer to a buffer where the last received report has been stored
- */
-void ProcessGenericHIDReport(uint8_t* DataArray)
+ISR(TIMER0_OVF_vect)
 {
-    /*
-        This is where you need to process reports sent from the host to the device. This
-        function is called each time the host has sent a new report. DataArray is an array
-        holding the report sent from the host.
-    */
+    USB_USBTask();
 
-    data[0] = DataArray[0];
-    data[1] = DataArray[1];
-    data[2] = DataArray[2];
-    data[3] = DataArray[3];
+    TCNT0 = TIMER_COUNT;
+};
+
+// dummy values used for testing only
+static uint32_t time       = 0;
+static uint16_t current[7] = {0, 0, 0, 0, 0, 0, 0};
+static uint16_t maximum[7] = {0, 0, 0, 0, 0, 0, 0};
+static uint8_t  mode       = 0;
+
+void process_newTime()
+{
+    // mark command as "accepted" by the application, so that LUFA does not process it
+    Endpoint_ClearSETUP();
+    Endpoint_ClearStatusStage();
+
+
+    //timeSet((USB_ControlRequest.wIndex << 16) | USB_ControlRequest.wValue);
+    time = ((uint32_t)USB_ControlRequest.wIndex << 16) | USB_ControlRequest.wValue;
 }
 
-/** Function to create the next report to send back to the host at the next reporting interval.
- *
- *  \param[out] DataArray  Pointer to a buffer where the next report data should be stored
- */
-void CreateGenericHIDReport(uint8_t* DataArray)
+void process_newCurrent()
 {
-    /*
-        This is where you need to create reports to be sent to the host from the device. This
-        function is called each time the host is ready to accept a new report. DataArray is
-        an array to hold the report to the host.
-    */
+    // mark command as "accepted" by the application, so that LUFA does not process it
+    Endpoint_ClearSETUP();
+    Endpoint_ClearStatusStage();
 
-    DataArray[0] = data[0];
-    DataArray[0] = data[1];
-    DataArray[0] = data[2];
-    DataArray[0] = data[3];
+
+    current[USB_ControlRequest.wIndex] = USB_ControlRequest.wValue;
 }
 
-/** Event handler for the USB_Connect event. This indicates that the device is enumerating via the status LEDs and
- *  starts the library USB task to begin the enumeration and USB management process.
- */
-void EVENT_USB_Device_Connect(void)
+void process_newMaximum()
 {
+    // mark command as "accepted" by the application, so that LUFA does not process it
+    Endpoint_ClearSETUP();
+    Endpoint_ClearStatusStage();
 
+
+    maximum[USB_ControlRequest.wIndex] = USB_ControlRequest.wValue;
 }
 
-/** Event handler for the USB_Disconnect event. This indicates that the device is no longer connected to a host via
- *  the status LEDs and stops the USB management task.
- */
-void EVENT_USB_Device_Disconnect(void)
+void process_newMode()
 {
+    // mark command as "accepted" by the application, so that LUFA does not process it
+    Endpoint_ClearSETUP();
+    Endpoint_ClearStatusStage();
 
+
+    mode = USB_ControlRequest.wValue;
 }
 
-/** Event handler for the USB_ConfigurationChanged event. This is fired when the host sets the current configuration
- *  of the USB device after enumeration, and configures the generic HID device endpoints.
- */
-void EVENT_USB_Device_ConfigurationChanged(void)
+void process_getTime()
 {
-    bool ConfigSuccess = true;
+    Endpoint_ClearSETUP();
+    Endpoint_Write_16_LE(time);
+    Endpoint_ClearIN();
 
-    /* Setup HID Report Endpoints */
-    ConfigSuccess &= Endpoint_ConfigureEndpoint(GENERIC_IN_EPADDR, EP_TYPE_INTERRUPT, GENERIC_EPSIZE, 1);
-    ConfigSuccess &= Endpoint_ConfigureEndpoint(GENERIC_OUT_EPADDR, EP_TYPE_INTERRUPT, GENERIC_EPSIZE, 1);
+    Endpoint_ClearStatusStage();
+}
+void process_getCurrent()
+{
+    Endpoint_ClearSETUP();
+    Endpoint_Write_Stream_LE(current, 14, 0);
+    Endpoint_ClearIN();
+    Endpoint_ClearStatusStage();
+}
+void process_getMaximum()
+{
+    Endpoint_ClearSETUP();
+    Endpoint_Write_Stream_LE(maximum, 14, 0);
+    Endpoint_ClearIN();
+    Endpoint_ClearStatusStage();
+}
+void process_getMode()
+{
+    Endpoint_ClearSETUP();
+    Endpoint_Write_8(mode);
+    Endpoint_ClearIN();
+    Endpoint_ClearStatusStage();
 }
 
-/** Event handler for the USB_ControlRequest event. This is used to catch and process control requests sent to
- *  the device from the USB host before passing along unhandled control requests to the library for processing
- *  internally.
- */
-void EVENT_USB_Device_ControlRequest(void)
+void EVENT_USB_Device_ControlRequest()
 {
     /* Handle HID Class specific requests */
     switch (USB_ControlRequest.bRequest)
@@ -109,99 +125,61 @@ void EVENT_USB_Device_ControlRequest(void)
         case HID_REQ_GetReport:
             if (USB_ControlRequest.bmRequestType == (REQDIR_DEVICETOHOST | REQTYPE_CLASS | REQREC_INTERFACE))
             {
-                uint8_t GenericData[GENERIC_REPORT_SIZE];
-                CreateGenericHIDReport(GenericData);
+                switch(USB_ControlRequest.bRequest)
+                {
+                case SET_TIME:
+                    process_newTime();
+                    break;
 
-                Endpoint_ClearSETUP();
+                case SET_CURRENT:
+                    process_newCurrent();
+                    break;
 
-                /* Write the report data to the control endpoint */
-                Endpoint_Write_Control_Stream_LE(&GenericData, sizeof(GenericData));
-                Endpoint_ClearOUT();
+                case SET_MAX:
+                    process_newMaximum();
+                    break;
+
+                case SET_MODE:
+                    process_newMode();
+                    break;
+                }
             }
 
             break;
         case HID_REQ_SetReport:
             if (USB_ControlRequest.bmRequestType == (REQDIR_HOSTTODEVICE | REQTYPE_CLASS | REQREC_INTERFACE))
             {
-                uint8_t GenericData[GENERIC_REPORT_SIZE];
+                switch(USB_ControlRequest.bRequest)
+                {
+                case GET_TIME:
+                    process_getTime();
+                    break;
 
-                Endpoint_ClearSETUP();
+                case GET_CURRENT:
+                    process_getCurrent();
+                    break;
 
-                /* Read the report data from the control endpoint */
-                Endpoint_Read_Control_Stream_LE(&GenericData, sizeof(GenericData));
-                Endpoint_ClearIN();
+                case GET_MAX:
+                    process_getMaximum();
+                    break;
 
-                ProcessGenericHIDReport(GenericData);
+                case GET_MODE:
+                    process_getMode();
+                    break;
+                }
             }
 
             break;
     }
 }
 
-void HID_Task(void)
-{
-    /* Device must be connected and configured for the task to run */
-    if (USB_DeviceState != DEVICE_STATE_Configured)
-      return;
-
-    Endpoint_SelectEndpoint(GENERIC_OUT_EPADDR);
-
-    /* Check to see if a packet has been sent from the host */
-    if (Endpoint_IsOUTReceived())
-    {
-        /* Check to see if the packet contains data */
-        if (Endpoint_IsReadWriteAllowed())
-        {
-            /* Create a temporary buffer to hold the read in report from the host */
-            uint8_t GenericData[GENERIC_REPORT_SIZE];
-
-            /* Read Generic Report Data */
-            Endpoint_Read_Stream_LE(&GenericData, sizeof(GenericData), NULL);
-
-            /* Process Generic Report Data */
-            ProcessGenericHIDReport(GenericData);
-        }
-
-        /* Finalize the stream transfer to send the last packet */
-        Endpoint_ClearOUT();
-    }
-
-    Endpoint_SelectEndpoint(GENERIC_IN_EPADDR);
-
-    /* Check to see if the host is ready to accept another packet */
-    if (Endpoint_IsINReady())
-    {
-        /* Create a temporary buffer to hold the report to send to the host */
-        uint8_t GenericData[GENERIC_REPORT_SIZE];
-
-        /* Create Generic Report Data */
-        CreateGenericHIDReport(GenericData);
-
-        /* Write Generic Report Data */
-        Endpoint_Write_Stream_LE(&GenericData, sizeof(GenericData), NULL);
-
-        /* Finalize the stream transfer to send the last packet */
-        Endpoint_ClearIN();
-    }
-}
-
-ISR(TIMER0_OVF_vect)
-{
-    HID_Task();
-    USB_USBTask();
-
-    TCNT0 = TIMER_COUNT;
-};
-
-ISR(TIMER0_OVF0_vect, ISR_ALIASOF(TIMER0_OVF_vect));
-
 Usb::Usb()
 {
     // setup a local ISR
-    TCCR0A = 0x00;           // normal count up timer operation
-    TCCR0B = 0x05;           // div-1024 = 7812.5Hz clock
-    TCNT0  = TIMER_COUNT;    // Interrupt every 10ms
-    TIMSK0 = (1 << TOIE0);   // enable interrupt
+    TCCR0A  = 0x00;           // normal count up timer operation
+    TCCR0B  = 0x05;           // div-1024 = 7812.5Hz clock
+    TCNT0   = TIMER_COUNT;    // Interrupt every 10ms
+    TIMSK0 |= (1 << TOIE0);   // enable interrupt
 
     /* Disable watchdog if enabled by bootloader/fuses */
     MCUSR &= ~(1 << WDRF);
@@ -213,32 +191,5 @@ Usb::Usb()
     /* Hardware Initialization */
     USB_Init();
 
-    sei();
-}
-
-bool Usb::tick()
-{
-    //HID_Task();
-    //USB_USBTask();
-
-    return attached();
-}
-
-bool Usb::attached()
-{
-    return (USB_DeviceState != DEVICE_STATE_Configured);
-}
-
-const Message * Usb::read()
-{
-    Message * ret = 0;
-
-    return ret;
-}
-
-bool Usb::send(const Message * data)
-{
-    bool ret = false;
-
-    return ret;
+    GlobalInterruptEnable();
 }

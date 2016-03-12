@@ -31,38 +31,12 @@
 #define NUMBER_OF_CHANNELS         7
 #endif
 
-// To make things easier on the device, we assume that all messages are of
-// the same length, defined by GENERIC_EPSIZE
-// This allows us to store an array of received messages that can be processed
-// in "slow" time by the controller
-//
-// To accomplish this, we simply allocate enough memory in the array to hold
-// a predefined number of messages.
-// Then each memory location is read by casting to Message
-// We can then read the msgType and perform one more cast to get the actual message
-
-class Message
-{
-public:
-    enum msgType
-    {
-        UNKNOWN,
-        STATUS,
-        SET_TIME,
-        SET_MAX,
-        SET_MODE
-    };
-
-    Message(msgType type = UNKNOWN)
-        :m_type(type), m_len(GENERIC_EPSIZE)
-    {}
-
-    operator msgType () const { return m_type; }
-    operator uint16_t() const { return m_len;  }
-    operator uint8_t () const { return m_len;  }
-
-protected:
-    msgType  m_type;
-    const uint8_t m_len;
-};
+#define GET_TIME    0
+#define SET_TIME    1
+#define GET_CURRENT 2
+#define SET_CURRENT 3
+#define GET_MAX     4
+#define SET_MAX     5
+#define GET_MODE    6
+#define SET_MODE    7
 
