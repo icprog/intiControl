@@ -78,6 +78,9 @@
 #include <i2cmaster.h>
 #include <global.h>
 
+#define I2C_FASTMODE 1
+#define I2C_NOINTERRUPT 0
+
 // constants for reading & writing
 #define I2C_READ    1
 #define I2C_WRITE   0
@@ -180,10 +183,10 @@ bool i2c_init(void)
      " ldi      r24,1                   ;set return value to true \n\t"
      " ret "
      : :
-       [SCLDDR] "I"  (SCL_DDR), [SCLPIN] "I" (SCL_PIN),
-       [SCLIN] "I" (SCL_IN), [SCLOUT] "I" (SCL_OUT),
-       [SDADDR] "I"  (SDA_DDR), [SDAPIN] "I" (SDA_PIN),
-       [SDAIN] "I" (SDA_IN), [SDAOUT] "I" (SDA_OUT));
+       [SCLDDR] "I" (SCL_DDR), [SCLPIN] "I" (SCL_PIN),
+       [SCLIN]  "I" (SCL_IN),  [SCLOUT] "I" (SCL_OUT),
+       [SDADDR] "I" (SDA_DDR), [SDAPIN] "I" (SDA_PIN),
+       [SDAIN]  "I" (SDA_IN),  [SDAOUT] "I" (SDA_OUT));
   return true;
 }
 

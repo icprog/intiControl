@@ -19,9 +19,10 @@ F_USB        = $(F_CPU)
 OPTIMIZATION = s
 TARGET       = intiController
 CPP_FILES    = $(wildcard src/*.cpp) 
-SRC          = $(TARGET).cpp descriptors.c $(CPP_FILES) $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
+C_FILES      = $(wildcard src/*.c) 
+SRC          = $(TARGET).cpp $(C_FILES) $(CPP_FILES) $(LUFA_SRC_USB) $(LUFA_SRC_USBCLASS)
 LUFA_PATH    = /opt/lufa/LUFA
-CC_FLAGS     = -DUSE_LUFA_CONFIG_HEADER -IConfig/ -Iinclude/ -fshort-enums 
+CC_FLAGS     = -DUSB_DEBUG -DUSE_LUFA_CONFIG_HEADER -IConfig/ -Iinclude/ -fshort-enums 
 
 #default target
 all:

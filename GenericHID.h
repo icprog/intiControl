@@ -44,11 +44,10 @@
 		#include <stdbool.h>
 		#include <string.h>
 
-		#include "Descriptors.h"
+                #include "descriptors.h"
 		#include "Config/AppConfig.h"
 
 		#include <LUFA/Drivers/USB/USB.h>
-		#include <LUFA/Drivers/Board/LEDs.h>
 		#include <LUFA/Platform/Platform.h>
 
 	/* Macros: */

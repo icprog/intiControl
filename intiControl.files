@@ -14,6 +14,7 @@ include/tkeeper.h
 include/control.h
 include/usb.h
 include/message.h
+include/debug.h
 src/datetime.cpp
 src/dimmer.cpp
 src/eeprom.cpp
@@ -25,6 +26,7 @@ src/timer.cpp
 src/tkeeper.cpp
 src/control.cpp
 src/usb.cpp
-descriptors.c
-descriptors.h
+src/descriptors.c
+src/debug.cpp
+include/descriptors.h
 intiController.cpp

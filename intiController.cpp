@@ -25,8 +25,6 @@
  *
  */
 
-#include "intiController.h"
-
 #include <avr/wdt.h>
 #include <avr/power.h>
 
@@ -35,31 +33,41 @@
 #include <rtc.h>
 #include <settings.h>
 #include <control.h>
+#include <delays.h>
 
+
+
+bool cleanRegisters()
+{
+    TIMSK0 = 0;
+    PCMSK1 = 0;
+    PCICR  = 0;
+
+    return true;
+}
 
 /** Main program entry point. This routine contains the overall program flow, including initial
  *  setup of all components and the main program loop.
  */
 int main(void)
 {
-    Usb      usb;
-    //Rtc      rtc;
-    //Settings settings;
-    //Control  control(settings.getEmitters(), rtc.now());
-    //DateTime now;
-
-    GlobalInterruptEnable();
-
-    for (;;)
+    if (cleanRegisters())
     {
-        usb.tick();
-        /*
-        // one second tick
-        if (rtc.tick())
+        Usb      usb;
+
+        Rtc      rtc;
+        Settings settings;
+        Control  control(settings.getEmitters(), rtc.now());
+
+        while (1)
         {
-            now = rtc.now();
-            control.tick(now);
+
+            // one second tick
+            if (rtc.tick())
+            {
+                DateTime now = rtc.now();
+                control.tick(now);
+            }
         }
-        */
     }
 }

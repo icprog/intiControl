@@ -39,9 +39,9 @@ ISR(PCINT1_vect)
 
 Rtc::Rtc()
 {
-    i2c_init();
+    i2c_init  ();
     setCharger(2);
-    setIRQ(1);
+    setIRQ    (1);
 
     DDRC   &= ~(1 << PC2);
     PORTC  |=  (1 << PC2);
