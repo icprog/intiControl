@@ -34,6 +34,7 @@
 
 #define TIMER_COUNT 0xD1
 
+Debug dbg;
 
 // Success indication globals (used to keep the success LED on so you can see it)
 int16_t successIndicatorCounter = 0;
@@ -78,7 +79,7 @@ void EVENT_USB_Device_ControlRequest(void)
             Endpoint_ClearSETUP();
 
             sprintf(debugString, "Error: USB_ControlRequest.bRequest == HID_REQ_GetReport?");
-            debugOut(debugString);
+            dbg.output(debugString);
 
             /* Write the report data to the control endpoint */
             //Endpoint_Write_Control_Stream_LE(&GenericData, sizeof(GenericData));
@@ -119,7 +120,7 @@ void EVENT_USB_Device_ControlRequest(void)
                         if (Endpoint_IsINReady())
                         {
                             // Copy any waiting debug text to the send data buffer
-                            copyDebugToSendBuffer((char*)&hidSendBuffer[0]);
+                            dbg.sendBuffer((char*)&hidSendBuffer[0]);
 
                             // Write the return packet data into the report
                             Endpoint_Write_Stream_LE(&hidSendBuffer, sizeof(hidSendBuffer), NULL);
@@ -133,7 +134,7 @@ void EVENT_USB_Device_ControlRequest(void)
 
                     case 0x80:  // Test 1 - Single packet write from host to device
                         sprintf(debugString, "** Received command 0x80 from host");
-                        debugOut(debugString);
+                        dbg.output(debugString);
 
                         // Test the received data
                         expectedData = 0;
@@ -151,19 +152,19 @@ void EVENT_USB_Device_ControlRequest(void)
                         {
                             successIndicatorFlag = true;
                             sprintf(debugString, "Successfully received 1 packet of data from command 0x80");
-                            debugOut(debugString);
+                            dbg.output(debugString);
                         }
                         else
                         {
                             failureIndicatorFlag = true;
                             sprintf(debugString, "Failed to receive 1 packet of data from command 0x80");
-                            debugOut(debugString);
+                            dbg.output(debugString);
                         }
                         break;
 
                     case 0x81:	// Test 2 - Single packet write from host, single packet reply from device
                         sprintf(debugString, "** Received command 0x81 from host");
-                        debugOut(debugString);
+                        dbg.output(debugString);
 
                         // Test the received data
                         expectedData = 0;
@@ -180,7 +181,7 @@ void EVENT_USB_Device_ControlRequest(void)
                         if (dataReceivedOk == true)
                         {
                             sprintf(debugString, "Successfully received 1 packet of data from command 0x81");
-                            debugOut(debugString);
+                            dbg.output(debugString);
 
                             // Select the IN end-point
                             Endpoint_SelectEndpoint(GENERIC_IN_EPNUM);
@@ -204,7 +205,7 @@ void EVENT_USB_Device_ControlRequest(void)
                             }
 
                             sprintf(debugString, "Sent 1 packet of data to the host from command 0x81");
-                            debugOut(debugString);
+                            dbg.output(debugString);
 
                             // Show our success
                             successIndicatorFlag = true;
@@ -214,13 +215,13 @@ void EVENT_USB_Device_ControlRequest(void)
                             failureIndicatorFlag = true;
 
                             sprintf(debugString, "Failed to receive 1 packet of data from command 0x81");
-                            debugOut(debugString);
+                            dbg.output(debugString);
                         }
                         break;
 
                     case 0x82:	// Test 3 - Single packet write from host, 128 packets in reply from device
                         sprintf(debugString, "** Received command 0x82 from host");
-                        debugOut(debugString);
+                        dbg.output(debugString);
 
                         // Test the received data
                         expectedData = 0;
@@ -237,7 +238,7 @@ void EVENT_USB_Device_ControlRequest(void)
                         if (dataReceivedOk == true)
                         {
                             sprintf(debugString, "Successfully received 1 packet of data from command 0x82, now bulk sending");
-                            debugOut(debugString);
+                            dbg.output(debugString);
 
                             // Bulk send 128 reply packets to the host (128x64 bytes = 8Kbytes response with 64 byte packet size)
 
@@ -263,7 +264,7 @@ void EVENT_USB_Device_ControlRequest(void)
                             }
 
                             sprintf(debugString, "Bulk sending complete (128 packets sent)");
-                            debugOut(debugString);
+                            dbg.output(debugString);
 
                             // Show our success
                             successIndicatorFlag = true;
@@ -273,13 +274,13 @@ void EVENT_USB_Device_ControlRequest(void)
                             failureIndicatorFlag = true;
 
                             sprintf(debugString, "Failed to receive 1 packet of data from command 0x82");
-                            debugOut(debugString);
+                            dbg.output(debugString);
                         }
                         break;
 
                     case 0x83:	// Test 4 - 128 packets written from host, 1 packet in reply from device
                         sprintf(debugString, "** Received command 0x83 from host");
-                        debugOut(debugString);
+                        dbg.output(debugString);
 
                         // There is only 63 bytes of data in the first packet due to the command byte
                         dataReceivedOk = true;
@@ -296,13 +297,13 @@ void EVENT_USB_Device_ControlRequest(void)
                         {
                             successIndicatorFlag = true;
                             sprintf(debugString, "Successfully received 1 packet of data from command 0x83");
-                            debugOut(debugString);
+                            dbg.output(debugString);
                         }
                         else
                         {
                             failureIndicatorFlag = true;
                             sprintf(debugString, "Failed to receive 1 packet of data from command 0x83");
-                            debugOut(debugString);
+                            dbg.output(debugString);
                         }
 
                         // Set up the bulk Rx globals
@@ -315,7 +316,7 @@ void EVENT_USB_Device_ControlRequest(void)
 
                     case 0x84:	// Test 5 - 128 packets written from host, 128 packets in reply from device
                         sprintf(debugString, "** Received command 0x84 from host");
-                        debugOut(debugString);
+                        dbg.output(debugString);
 
                         // There is only 63 bytes of data in the first packet due to the command byte
                         dataReceivedOk = true;
@@ -332,13 +333,13 @@ void EVENT_USB_Device_ControlRequest(void)
                         {
                             successIndicatorFlag = true;
                             sprintf(debugString, "Successfully received 1 packet of data from command 0x84");
-                            debugOut(debugString);
+                            dbg.output(debugString);
                         }
                         else
                         {
                             failureIndicatorFlag = true;
                             sprintf(debugString, "Failed to receive 1 packet of data from command 0x84");
-                            debugOut(debugString);
+                            dbg.output(debugString);
                         }
 
                         // Set up the bulk Rx globals
@@ -351,7 +352,7 @@ void EVENT_USB_Device_ControlRequest(void)
                     default:
                         // Unknown command received
                         sprintf(debugString, "Unknown command received (%x)", hidReceiveBuffer[0]);
-                        debugOut(debugString);
+                        dbg.output(debugString);
                         break;
                 } // switch(hidReceiveBuffer[0])
             }
@@ -370,7 +371,7 @@ void EVENT_USB_Device_ControlRequest(void)
                             {
                                 dataReceivedOk = false;
                                 sprintf(debugString, "Bulk Rx 0x83 expected %d, got %d (bufferPointer = %d)", expectedData, hidReceiveBuffer[bufferPointer], bufferPointer);
-                                debugOut(debugString);
+                                dbg.output(debugString);
 
                                 // Quit the for() loop
                                 break;
@@ -389,7 +390,7 @@ void EVENT_USB_Device_ControlRequest(void)
                                 bulkRxCommandNumber = 0;
 
                                 sprintf(debugString, "Bulk Rx to command 0x83 successful - %d packets received", bulkRxCurrentPacket);
-                                debugOut(debugString);
+                                dbg.output(debugString);
 
                                 // Send 1 packet to the host in reply to the command
 
@@ -413,7 +414,7 @@ void EVENT_USB_Device_ControlRequest(void)
                                 }
 
                                 sprintf(debugString, "Sent 1 packet of data to the host from command 0x83");
-                                debugOut(debugString);
+                                dbg.output(debugString);
 
                                 // Show our success
                                 successIndicatorFlag = true;
@@ -424,7 +425,7 @@ void EVENT_USB_Device_ControlRequest(void)
                             // Received data was wrong, give up
                             failureIndicatorFlag = true;
                             sprintf(debugString, "Failed to bulk Rx data from command 0x83 (current packet = %d)", bulkRxCurrentPacket);
-                            debugOut(debugString);
+                            dbg.output(debugString);
 
                             // Leave bulk Rx mode
                             bulkRxModeFlag = false;
@@ -442,7 +443,7 @@ void EVENT_USB_Device_ControlRequest(void)
                             {
                                 dataReceivedOk = false;
                                 sprintf(debugString, "Bulk Rx 0x84 expected %d, got %d (bufferPointer = %d)", expectedData, hidReceiveBuffer[bufferPointer], bufferPointer);
-                                debugOut(debugString);
+                                dbg.output(debugString);
 
                                 // Quit the for() loop
                                 break;
@@ -461,7 +462,7 @@ void EVENT_USB_Device_ControlRequest(void)
                                 bulkRxCommandNumber = 0;
 
                                 sprintf(debugString, "Bulk Rx to command 0x84 successful - %d packets received", bulkRxCurrentPacket);
-                                debugOut(debugString);
+                                dbg.output(debugString);
 
                                 // Send 128 packets to the host in reply to the command
 
@@ -487,7 +488,7 @@ void EVENT_USB_Device_ControlRequest(void)
                                 }
 
                                 sprintf(debugString, "Bulk sending complete (128 packets sent) 0x84");
-                                debugOut(debugString);
+                                dbg.output(debugString);
 
                                 // Show our success
                                 successIndicatorFlag = true;
@@ -498,7 +499,7 @@ void EVENT_USB_Device_ControlRequest(void)
                             // Received data was wrong, give up
                             failureIndicatorFlag = true;
                             sprintf(debugString, "Failed to bulk Rx data from command 0x84 (current packet = %d)", bulkRxCurrentPacket);
-                            debugOut(debugString);
+                            dbg.output(debugString);
 
                             // Leave bulk Rx mode
                             bulkRxModeFlag = false;
@@ -509,7 +510,7 @@ void EVENT_USB_Device_ControlRequest(void)
                     default:
                         // Unknown bulk receive command!
                         sprintf(debugString, "Unknown bulk receive command!");
-                        debugOut(debugString);
+                        dbg.output(debugString);
                         break;
                 }
             }
