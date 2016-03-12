@@ -38,7 +38,7 @@
 #include "debug.h"
 #include "descriptors.h"
 
-void Debug::Debug()
+Debug::Debug()
     : m_start(0), m_end(0), m_level(0)
 {
 }

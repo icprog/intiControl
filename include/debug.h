@@ -40,7 +40,7 @@ public:
     Debug();
 
     void output    (const char * dbgString);
-    void sendBuffer(const char * dbgString);
+    void sendBuffer(char * sndBuffer);
 
 private:
     static const uint8_t DEBUGBUFFERSIZE = 256;
