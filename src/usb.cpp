@@ -120,7 +120,7 @@ void EVENT_USB_Device_ControlRequest(void)
                         if (Endpoint_IsINReady())
                         {
                             // Copy any waiting debug text to the send data buffer
-                            dbg.sendBuffer((char*)&hidSendBuffer[0]);
+                            dbg.sendBuffer(hidSendBuffer);
 
                             // Write the return packet data into the report
                             Endpoint_Write_Stream_LE(&hidSendBuffer, sizeof(hidSendBuffer), NULL);
