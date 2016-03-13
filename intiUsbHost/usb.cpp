@@ -3,6 +3,28 @@
 #include "usb.h"
 #include <message.h>
 
+// Values for bmRequestType in the Setup transaction's Data packet.
+
+static const int CONTROL_REQUEST_TYPE_IN = LIBUSB_ENDPOINT_IN | LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_INTERFACE;
+static const int CONTROL_REQUEST_TYPE_OUT = LIBUSB_ENDPOINT_OUT | LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_INTERFACE;
+
+// From the HID spec:
+
+static const int HID_GET_REPORT = 0x01;
+static const int HID_SET_REPORT = 0x09;
+static const int HID_REPORT_TYPE_INPUT = 0x01;
+static const int HID_REPORT_TYPE_OUTPUT = 0x02;
+static const int HID_REPORT_TYPE_FEATURE = 0x03;
+
+// With firmware support, transfers can be > the endpoint's max packet size.
+
+static const int MAX_CONTROL_IN_TRANSFER_SIZE = 2;
+static const int MAX_CONTROL_OUT_TRANSFER_SIZE = 2;
+
+static const int INTERFACE_NUMBER = 0;
+static const int TIMEOUT_MS = 5000;
+
+
 Usb::Usb(short vid, short pid, QObject *parent)
     : QObject(parent),
       m_vid(vid),
@@ -23,6 +45,8 @@ Usb::Usb(short vid, short pid, QObject *parent)
 
     for (int i = 0; i< NBUFFERS; i++)
         m_transfers[i] = libusb_alloc_transfer(0);
+
+    pthread_mutex_init(&m_mutex, NULL);
 }
 
 Usb::~Usb()
@@ -124,12 +148,11 @@ bool Usb::stop()
 }
 bool Usb::send(char * data, uint len)
 {
-    libusb_fill_interrupt_transfer(m_transfers[0],
-            (libusb_device_handle*)m_devicehandle, 0x02,
-            (unsigned char*)data, len, &call_fn, this, 0);
-
-    // submitt our buffer
-    m_error = libusb_submit_transfer(m_transfers[0]);
+    data[0] = 0x81;
+    m_error = libusb_control_transfer(
+            (libusb_device_handle*)m_devicehandle, LIBUSB_REQUEST_SET_COvNFIGURATION,
+                /*0x21*/ LIBUSB_REQUEST_TYPE_CLASS | LIBUSB_RECIPIENT_INTERFACE,
+                0, 0, (uchar*)data, len, 0);
 
     return !m_error;
 }

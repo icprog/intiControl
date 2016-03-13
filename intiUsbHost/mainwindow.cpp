@@ -4,12 +4,13 @@
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    m_usb(0x03EB, 0x204F)
+    m_usb(0x03EB, 0x214F)
 {
+    char test[64];
     ui->setupUi(this);
 
     m_usb.start();
-    //m_usb.send("AA", 1);
+    m_usb.send(test, 64);
 }
 
 MainWindow::~MainWindow()
